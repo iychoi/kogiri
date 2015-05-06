@@ -1,0 +1,7 @@
+{
+    "machine_cores": 12,
+    "machine_num" : 12,
+    "machine_max_reducers" : 3,
+    "mr_version" : 2,
+    "external_param" : []
+}
