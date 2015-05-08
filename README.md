@@ -14,8 +14,20 @@ Requirements:
 - JDK 1.6
 - ant
 
-To build this project, just type "ant" with no options at the root directory of this source package.
-To build all-in-one package of this project including all necessary dependencies, type "ant allinone" or use a script, "/scripts/package_allinone.sh".
+To build this project, just type below at the root directory of this source package.
+```
+ant
+```
+
+To build all-in-one package of this project including all necessary dependencies, type below.
+```
+ant allinone
+```
+or
+```
+cd scripts
+./package_allinone.sh
+```
 
 Created jar packages will be located in "/dist" directory.
 
