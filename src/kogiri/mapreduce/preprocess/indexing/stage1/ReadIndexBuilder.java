@@ -165,6 +165,7 @@ public class ReadIndexBuilder extends Configured implements Tool, IPreprocessSta
         // commit results
         if(result) {
             commit(new Path(ppConfig.getReadIndexPath()), conf, namedOutputs);
+            commit(new Path(ppConfig.getKmerFrequencyHistogramPath()), conf, namedOutputs);
         }
         
         // report
@@ -192,7 +193,7 @@ public class ReadIndexBuilder extends Configured implements Tool, IPreprocessSta
                 } else if(MapReduceHelper.isPartialOutputFiles(entryPath)) {
                     fs.delete(entryPath, true);
                 } else if(KmerFrequencyHistogramHelper.isKmerFrequencyHistogramFile(entryPath)) {
-                    // it is not necessary renaming kmer frequency histogram files
+                    // not necessary
                 } else {
                     // rename outputs
                     NamedOutputRecord namedOutput = namedOutputs.getRecordFromMROutput(entryPath.getName());

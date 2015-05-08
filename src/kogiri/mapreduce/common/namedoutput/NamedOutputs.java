@@ -105,7 +105,7 @@ public class NamedOutputs {
         if(this.identifierCache.get(identifier) == null) {
             try {
                 // okey
-                addRecord(filename, identifier);
+                addRecord(identifier, filename);
             } catch (DuplicatedNamedOutputException ex) {
                 LOG.error(ex);
             }
@@ -118,7 +118,7 @@ public class NamedOutputs {
                 if(this.identifierCache.get(identifierTrial) == null) {
                     // okey
                     try {
-                        addRecord(filename, identifierTrial);
+                        addRecord(identifierTrial, filename);
                     } catch (DuplicatedNamedOutputException ex) {
                         LOG.error(ex);
                     }
@@ -148,7 +148,7 @@ public class NamedOutputs {
     public void addRecord(String identifier, String filename) throws DuplicatedNamedOutputException {
         if(this.identifierCache.get(identifier) == null) {
             // okey
-            NamedOutputRecord record = new NamedOutputRecord(filename, identifier);
+            NamedOutputRecord record = new NamedOutputRecord(identifier, filename);
             this.identifierCache.put(identifier, this.recordList.size());
             this.filenameCache.put(filename, this.recordList.size());
             this.recordList.add(record);

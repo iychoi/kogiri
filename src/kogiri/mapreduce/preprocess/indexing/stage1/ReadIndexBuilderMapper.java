@@ -20,6 +20,7 @@ package kogiri.mapreduce.preprocess.indexing.stage1;
 import kogiri.mapreduce.preprocess.common.helpers.KmerFrequencyHistogramHelper;
 import java.io.IOException;
 import kogiri.common.fasta.FastaRead;
+import kogiri.mapreduce.common.namedoutput.NamedOutputRecord;
 import kogiri.mapreduce.common.namedoutput.NamedOutputs;
 import kogiri.mapreduce.preprocess.common.PreprocessorConfig;
 import kogiri.mapreduce.preprocess.common.kmerfrequencyhistogram.KmerFrequencyHistogram;
@@ -63,9 +64,10 @@ public class ReadIndexBuilderMapper extends Mapper<LongWritable, FastaRead, Long
         FileSplit inputSplit = (FileSplit)context.getInputSplit();
         
         int namedoutputID = this.namedOutputs.getIDFromFilename(inputSplit.getPath().getName());
-        this.namedOutput = this.namedOutputs.getRecordFromID(namedoutputID).getIdentifier();
+        NamedOutputRecord namedoutputRecord = this.namedOutputs.getRecordFromID(namedoutputID);
+        this.namedOutput = namedoutputRecord.getIdentifier();
         
-        this.histogram = new KmerFrequencyHistogram(this.namedOutput, this.ppConfig.getKmerSize());
+        this.histogram = new KmerFrequencyHistogram(namedoutputRecord.getFilename(), this.ppConfig.getKmerSize());
     }
     
     @Override

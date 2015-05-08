@@ -26,41 +26,31 @@ import org.codehaus.jackson.annotate.JsonProperty;
  * @author iychoi
  */
 public class NamedOutputRecord implements Comparable<NamedOutputRecord> {
-    private String filename;
     private String identifier;
+    private String filename;
     
     public NamedOutputRecord() {
     }
     
     public NamedOutputRecord(Path file) {
-        initialize(file.getName(), NamedOutputs.getSafeIdentifier(file.getName()));
+        initialize(NamedOutputs.getSafeIdentifier(file.getName()), file.getName());
     }
     
-    public NamedOutputRecord(Path file, String identifier) {
-        initialize(file.getName(), identifier);
+    public NamedOutputRecord(String identifier, Path file) {
+        initialize(identifier, file.getName());
     }
     
     public NamedOutputRecord(String filename) {
-        initialize(filename, NamedOutputs.getSafeIdentifier(filename));
+        initialize(NamedOutputs.getSafeIdentifier(filename), filename);
     }
     
-    public NamedOutputRecord(String filename, String identifier) {
-        initialize(filename, identifier);
+    public NamedOutputRecord(String identifier, String filename) {
+        initialize(identifier, filename);
     }
     
     @JsonIgnore
-    private void initialize(String filename, String identifier) {
-        this.filename = filename;
+    private void initialize(String identifier, String filename) {
         this.identifier = identifier;
-    }
-    
-    @JsonProperty("filename")
-    public String getFilename() {
-        return this.filename;
-    }
-    
-    @JsonProperty("filename")
-    public void setFilename(String filename) {
         this.filename = filename;
     }
     
@@ -72,6 +62,16 @@ public class NamedOutputRecord implements Comparable<NamedOutputRecord> {
     @JsonProperty("identifier")
     public void setIdentifier(String identifier) {
         this.identifier = identifier;
+    }
+    
+    @JsonProperty("filename")
+    public String getFilename() {
+        return this.filename;
+    }
+    
+    @JsonProperty("filename")
+    public void setFilename(String filename) {
+        this.filename = filename;
     }
     
     @JsonIgnore
