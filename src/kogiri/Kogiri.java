@@ -33,7 +33,8 @@ public class Kogiri {
     private static final Log LOG = LogFactory.getLog(Kogiri.class);
     
     private static final String[] CLASS_SEARCH_PACKAGES = {
-        "kogiri.preprocess"
+        "kogiri.preprocess",
+        "kogiri.mapreduce.preprocess.indexing.stage1"
     };
     
     private static void invokeClass(Class clazz, String[] args) throws Exception {
@@ -103,7 +104,7 @@ public class Kogiri {
                 // call a main function in the class
                 invokeClass(clazz, classArg);
             } else {
-                System.err.println("Class name or command is not given properly : " + potentialClassName);
+                throw new Exception("Class name or command is not given properly : " + potentialClassName);
             }
         } else {
             printHelp();
