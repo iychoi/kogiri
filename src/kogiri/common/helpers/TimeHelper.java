@@ -17,31 +17,37 @@
  */
 package kogiri.common.helpers;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import org.apache.commons.io.IOUtils;
+import java.text.Format;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  *
  * @author iychoi
  */
-public class JarResourceHelper {
-    public static InputStream getResource(String path) {
-        return JarResourceHelper.class.getResourceAsStream(path);
+public class TimeHelper {
+    public static long getCurrentTime() {
+        return System.currentTimeMillis();
     }
     
-    public static boolean hasResource(String path) {
-        URL resource = JarResourceHelper.class.getResource(path);
-        if(resource != null) {
-            return true;
-        }
-        return false;
+    public static String getDiffTimeString(long begin, long end) {
+        long diff = end - begin;
+        long remain = diff;
+        
+        int msec = (int) (remain % 1000);
+        remain /= 1000;
+        int sec = (int) (remain % 60);
+        remain /= 60;
+        int min = (int) (remain % 60);
+        remain /= 60;
+        int hour = (int) (remain);
+        
+        return hour + "h " + min + "m " + sec + "s";
     }
     
-    public static String getResourceAsText(String path) throws IOException {
-        InputStream is = getResource(path);
-        IOUtils utils = new IOUtils();
-        return utils.toString(is);
+    public static String getTimeString(long time) {
+        Date date = new Date(time);
+        Format format = new SimpleDateFormat("yyyy MM dd HH:mm:ss");
+        return format.format(date);
     }
 }

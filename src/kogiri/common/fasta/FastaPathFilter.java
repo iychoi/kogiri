@@ -15,33 +15,28 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package kogiri.common.helpers;
+package kogiri.common.fasta;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import org.apache.commons.io.IOUtils;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 
 /**
  *
  * @author iychoi
  */
-public class JarResourceHelper {
-    public static InputStream getResource(String path) {
-        return JarResourceHelper.class.getResourceAsStream(path);
-    }
-    
-    public static boolean hasResource(String path) {
-        URL resource = JarResourceHelper.class.getResource(path);
-        if(resource != null) {
+public class FastaPathFilter implements PathFilter {
+
+    @Override
+    public boolean accept(Path path) {
+        if(path.getName().toLowerCase().endsWith(".fa.gz")) {
+            return true;
+        } else if(path.getName().toLowerCase().endsWith(".fa")) {
+            return true;
+        } else if(path.getName().toLowerCase().endsWith(".ffn.gz")) {
+            return true;
+        } else if(path.getName().toLowerCase().endsWith(".ffn")) {
             return true;
         }
         return false;
-    }
-    
-    public static String getResourceAsText(String path) throws IOException {
-        InputStream is = getResource(path);
-        IOUtils utils = new IOUtils();
-        return utils.toString(is);
     }
 }

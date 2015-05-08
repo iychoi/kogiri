@@ -15,33 +15,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package kogiri.common.helpers;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import org.apache.commons.io.IOUtils;
+package kogiri.mapreduce.preprocess.common;
 
 /**
  *
  * @author iychoi
  */
-public class JarResourceHelper {
-    public static InputStream getResource(String path) {
-        return JarResourceHelper.class.getResourceAsStream(path);
-    }
-    
-    public static boolean hasResource(String path) {
-        URL resource = JarResourceHelper.class.getResource(path);
-        if(resource != null) {
-            return true;
-        }
-        return false;
-    }
-    
-    public static String getResourceAsText(String path) throws IOException {
-        InputStream is = getResource(path);
-        IOUtils utils = new IOUtils();
-        return utils.toString(is);
-    }
+public interface IPreprocessStage {
+    public int run(PreprocessorConfig ppConfig) throws Exception;
 }

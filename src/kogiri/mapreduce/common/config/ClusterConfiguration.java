@@ -15,13 +15,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package kogiri.common.config.cluster;
+package kogiri.mapreduce.common.config;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import kogiri.common.config.hadoop.ConfigurationParam;
 import kogiri.common.helpers.JarResourceHelper;
 import kogiri.common.json.JsonSerializer;
 import org.apache.commons.logging.Log;
@@ -37,7 +36,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 public class ClusterConfiguration {
 
     private static final Log LOG = LogFactory.getLog(ClusterConfiguration.class);
-    private static final String PREDEFINED_CLUSTER_CONFIG_PATH = "/kogiri/config/predefined/cluster/";
+    private static final String PREDEFINED_CLUSTER_CONFIG_PATH = "/config/cluster/";
     
     private int mrVersion = 2;
     private int machineCores = 1;

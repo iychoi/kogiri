@@ -15,33 +15,27 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package kogiri.common.helpers;
+package kogiri.common.algorithms;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import org.apache.commons.io.IOUtils;
+import kogiri.common.helpers.SequenceHelper;
 
 /**
  *
  * @author iychoi
  */
-public class JarResourceHelper {
-    public static InputStream getResource(String path) {
-        return JarResourceHelper.class.getResourceAsStream(path);
+public class KmerKeySelection {
+    public KmerKeySelection() {
+        
     }
     
-    public static boolean hasResource(String path) {
-        URL resource = JarResourceHelper.class.getResource(path);
-        if(resource != null) {
-            return true;
+    public String selectKey(String kmer) {
+        String rkmer = SequenceHelper.getReverseComplement(kmer);
+            
+        String kmerKey = kmer;
+        if(rkmer.compareTo(kmer) < 0) {
+            kmerKey = rkmer;
         }
-        return false;
-    }
-    
-    public static String getResourceAsText(String path) throws IOException {
-        InputStream is = getResource(path);
-        IOUtils utils = new IOUtils();
-        return utils.toString(is);
+
+        return kmerKey;
     }
 }

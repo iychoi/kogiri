@@ -15,27 +15,31 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package kogiri.common.config.cluster.test;
+package kogiri.mapreduce.common.helpers;
 
-import kogiri.common.config.cluster.ClusterConfiguration;
+import java.io.IOException;
+import kogiri.Kogiri;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.mapred.ClusterStatus;
+import org.apache.hadoop.mapred.JobClient;
 
 /**
  *
  * @author iychoi
  */
-public class TestPredefinedConfigurationRead {
+public class MapReduceClusterHelper {
     
-    private static final Log LOG = LogFactory.getLog(TestPredefinedConfigurationRead.class);
+    private static final Log LOG = LogFactory.getLog(Kogiri.class);
     
-    public static void main(String[] args) throws Exception {
-        System.out.println("test default cluster config");
-        ClusterConfiguration default_conf = ClusterConfiguration.createInstanceFromPredefined("default");
-        System.out.println(default_conf.toString());
-        
-        System.out.println("test uits cluster config");
-        ClusterConfiguration uits_conf = ClusterConfiguration.createInstanceFromPredefined("uits");
-        System.out.println(uits_conf.toString());
+    public static int getNodeNum() {
+        try {
+            JobClient client = new JobClient();
+            ClusterStatus clusterStatus = client.getClusterStatus();
+            return clusterStatus.getTaskTrackers();
+        } catch (IOException ex) {
+            LOG.error(ex);
+            return -1;
+        }
     }
 }

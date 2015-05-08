@@ -20,7 +20,7 @@ package kogiri;
 import java.util.ArrayList;
 import java.util.List;
 import kogiri.common.helpers.ClassHelper;
-import kogiri.preprocess.Preprocessor;
+import kogiri.mapreduce.preprocess.Preprocessor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

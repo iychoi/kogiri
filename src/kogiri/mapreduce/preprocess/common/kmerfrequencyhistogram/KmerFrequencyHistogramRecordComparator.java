@@ -15,12 +15,18 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package kogiri.common.cmdargs;
+package kogiri.mapreduce.preprocess.common.kmerfrequencyhistogram;
+
+import java.util.Comparator;
 
 /**
  *
  * @author iychoi
  */
-public abstract class ACommandArgumentsParser<T> {
-    public abstract T parse(String[] args);
+public class KmerFrequencyHistogramRecordComparator implements Comparator<KmerFrequencyHistogramRecord> {
+
+    @Override
+    public int compare(KmerFrequencyHistogramRecord t, KmerFrequencyHistogramRecord t1) {
+        return t.getKmer().compareToIgnoreCase(t1.getKmer());
+    }
 }

@@ -15,12 +15,20 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package kogiri.preprocess;
+package kogiri.mapreduce.preprocess.common.kmerfrequencyhistogram;
+
+import kogiri.mapreduce.preprocess.common.helpers.KmerFrequencyHistogramHelper;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 
 /**
  *
  * @author iychoi
  */
-public class Preprocessor {
-    
+public class KmerFrequencyHistogramPathFilter implements PathFilter {
+
+    @Override
+    public boolean accept(Path path) {
+        return KmerFrequencyHistogramHelper.isKmerFrequencyHistogramFile(path);
+    }
 }
