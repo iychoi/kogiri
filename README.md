@@ -34,3 +34,5 @@ Created jar packages will be located in "/dist" directory.
 License
 -------
 This project binary and source code is publically accessible under GPL v2 license agreement. If you modify source code and want to distribute, folk this project so that I can keep track of the modifications.
+
+This project includes packages using Apache public license v2. Their license files are located in "/lib" directory.
