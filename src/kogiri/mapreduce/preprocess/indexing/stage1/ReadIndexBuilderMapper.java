@@ -17,13 +17,13 @@
  */
 package kogiri.mapreduce.preprocess.indexing.stage1;
 
-import kogiri.mapreduce.preprocess.common.helpers.KmerFrequencyHistogramHelper;
+import kogiri.mapreduce.preprocess.common.helpers.KmerHistogramHelper;
 import java.io.IOException;
 import kogiri.common.fasta.FastaRead;
 import kogiri.mapreduce.common.namedoutput.NamedOutputRecord;
 import kogiri.mapreduce.common.namedoutput.NamedOutputs;
 import kogiri.mapreduce.preprocess.common.PreprocessorConfig;
-import kogiri.mapreduce.preprocess.common.kmerfrequencyhistogram.KmerFrequencyHistogram;
+import kogiri.mapreduce.preprocess.common.kmerhistogram.KmerHistogram;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -48,7 +48,7 @@ public class ReadIndexBuilderMapper extends Mapper<LongWritable, FastaRead, Long
     private NamedOutputs namedOutputs;
     private MultipleOutputs mos;
     private int readIDCounter;
-    private KmerFrequencyHistogram histogram;
+    private KmerHistogram histogram;
     private String namedOutput;
     
     @Override
@@ -67,7 +67,7 @@ public class ReadIndexBuilderMapper extends Mapper<LongWritable, FastaRead, Long
         NamedOutputRecord namedoutputRecord = this.namedOutputs.getRecordFromID(namedoutputID);
         this.namedOutput = namedoutputRecord.getIdentifier();
         
-        this.histogram = new KmerFrequencyHistogram(namedoutputRecord.getFilename(), this.ppConfig.getKmerSize());
+        this.histogram = new KmerHistogram(namedoutputRecord.getFilename(), this.ppConfig.getKmerSize());
     }
     
     @Override
@@ -86,10 +86,10 @@ public class ReadIndexBuilderMapper extends Mapper<LongWritable, FastaRead, Long
         }
         
         String sampleName = this.histogram.getSampleName();
-        String histogramFileName = KmerFrequencyHistogramHelper.makeKmerFrequencyHistogramFileName(sampleName);
+        String histogramFileName = KmerHistogramHelper.makeKmerHistogramFileName(sampleName);
 
-        LOG.info("create a k-mer frequency histogram file : " + histogramFileName);
-        Path histogramOutputFile = new Path(this.ppConfig.getKmerFrequencyHistogramPath(), histogramFileName);
+        LOG.info("create a k-mer histogram file : " + histogramFileName);
+        Path histogramOutputFile = new Path(this.ppConfig.getKmerHistogramPath(), histogramFileName);
         FileSystem outputFileSystem = histogramOutputFile.getFileSystem(context.getConfiguration());
 
         this.histogram.saveTo(histogramOutputFile, outputFileSystem);

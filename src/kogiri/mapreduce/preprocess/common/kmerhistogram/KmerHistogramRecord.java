@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package kogiri.mapreduce.preprocess.common.kmerfrequencyhistogram;
+package kogiri.mapreduce.preprocess.common.kmerhistogram;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
@@ -24,15 +24,15 @@ import org.codehaus.jackson.annotate.JsonProperty;
  *
  * @author iychoi
  */
-public class KmerFrequencyHistogramRecord implements Comparable<KmerFrequencyHistogramRecord> {
+public class KmerHistogramRecord implements Comparable<KmerHistogramRecord> {
     private String kmer;
     private long frequency;
     
-    public KmerFrequencyHistogramRecord() {
+    public KmerHistogramRecord() {
         
     }
     
-    public KmerFrequencyHistogramRecord(String key, long freqeuncy) {
+    public KmerHistogramRecord(String key, long freqeuncy) {
         this.kmer = key;
         this.frequency = freqeuncy;
     }
@@ -69,7 +69,7 @@ public class KmerFrequencyHistogramRecord implements Comparable<KmerFrequencyHis
 
     @JsonIgnore
     @Override
-    public int compareTo(KmerFrequencyHistogramRecord right) {
+    public int compareTo(KmerHistogramRecord right) {
         return this.kmer.compareToIgnoreCase(right.kmer);
     }
 }

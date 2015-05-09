@@ -17,7 +17,7 @@
  */
 package kogiri.mapreduce.preprocess.indexing.stage1;
 
-import kogiri.mapreduce.preprocess.common.helpers.KmerFrequencyHistogramHelper;
+import kogiri.mapreduce.preprocess.common.helpers.KmerHistogramHelper;
 import kogiri.mapreduce.preprocess.common.helpers.ReadIndexHelper;
 import kogiri.mapreduce.preprocess.common.IPreprocessStage;
 import java.io.IOException;
@@ -94,8 +94,8 @@ public class ReadIndexBuilder extends Configured implements Tool, IPreprocessSta
             throw new PreprocessorConfigException("cannout find cluster configuration");
         }
         
-        if(ppConfig.getKmerFrequencyHistogramPath() == null) {
-            throw new PreprocessorConfigException("cannot find kmer frequency histogram path");
+        if(ppConfig.getKmerHistogramPath() == null) {
+            throw new PreprocessorConfigException("cannot find kmer histogram path");
         }
         
         if(ppConfig.getKmerSize() <= 0) {
@@ -165,7 +165,7 @@ public class ReadIndexBuilder extends Configured implements Tool, IPreprocessSta
         // commit results
         if(result) {
             commit(new Path(ppConfig.getReadIndexPath()), conf, namedOutputs);
-            commit(new Path(ppConfig.getKmerFrequencyHistogramPath()), conf, namedOutputs);
+            commit(new Path(ppConfig.getKmerHistogramPath()), conf, namedOutputs);
         }
         
         // report
@@ -192,7 +192,7 @@ public class ReadIndexBuilder extends Configured implements Tool, IPreprocessSta
                     fs.delete(entryPath, true);
                 } else if(MapReduceHelper.isPartialOutputFiles(entryPath)) {
                     fs.delete(entryPath, true);
-                } else if(KmerFrequencyHistogramHelper.isKmerFrequencyHistogramFile(entryPath)) {
+                } else if(KmerHistogramHelper.isKmerHistogramFile(entryPath)) {
                     // not necessary
                 } else {
                     // rename outputs

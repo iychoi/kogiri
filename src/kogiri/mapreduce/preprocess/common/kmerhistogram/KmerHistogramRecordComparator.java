@@ -15,15 +15,18 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package kogiri.mapreduce.preprocess.common;
+package kogiri.mapreduce.preprocess.common.kmerhistogram;
+
+import java.util.Comparator;
 
 /**
  *
  * @author iychoi
  */
-public class PreprocessConstants {
-    public final static String KMER_HISTOGRAM_FILENAME_EXTENSION = "histogram";
-    public final static String READ_INDEX_FILENAME_EXTENSION = "ridx";
-    public final static String KMER_INDEX_INDEX_FILENAME_EXTENSION = "kidx_index";
-    public final static String KMER_INDEX_FILENAME_EXTENSION = "kidx";
+public class KmerHistogramRecordComparator implements Comparator<KmerHistogramRecord> {
+
+    @Override
+    public int compare(KmerHistogramRecord t, KmerHistogramRecord t1) {
+        return t.getKmer().compareToIgnoreCase(t1.getKmer());
+    }
 }

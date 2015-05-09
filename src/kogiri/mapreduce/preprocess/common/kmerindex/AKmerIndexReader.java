@@ -15,18 +15,20 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package kogiri.mapreduce.preprocess.common.kmerfrequencyhistogram;
+package kogiri.mapreduce.preprocess.common.kmerindex;
 
-import java.util.Comparator;
+import java.io.Closeable;
+import java.io.IOException;
+import kogiri.common.hadoop.io.datatypes.CompressedIntArrayWritable;
+import kogiri.common.hadoop.io.datatypes.CompressedSequenceWritable;
 
 /**
  *
  * @author iychoi
  */
-public class KmerFrequencyHistogramRecordComparator implements Comparator<KmerFrequencyHistogramRecord> {
-
+public abstract class AKmerIndexReader implements Closeable {
     @Override
-    public int compare(KmerFrequencyHistogramRecord t, KmerFrequencyHistogramRecord t1) {
-        return t.getKmer().compareToIgnoreCase(t1.getKmer());
-    }
+    public abstract void close() throws IOException;
+    public abstract String[] getIndexPaths();
+    public abstract boolean next(CompressedSequenceWritable key, CompressedIntArrayWritable val) throws IOException;
 }

@@ -18,8 +18,6 @@
 package kogiri.mapreduce.preprocess;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import kogiri.mapreduce.common.cmdargs.CommandArgumentsParser;
 import kogiri.mapreduce.preprocess.common.PreprocessorConfig;
 import kogiri.mapreduce.preprocess.indexing.stage1.ReadIndexBuilder;

@@ -28,6 +28,11 @@ public class KmerKeySelection {
         
     }
     
+    public static enum KmerForm {
+        FORWARD,
+        REVERSE_COMPLEMENT,
+    }
+    
     public String selectKey(String kmer) {
         String rkmer = SequenceHelper.getReverseComplement(kmer);
             
@@ -38,4 +43,66 @@ public class KmerKeySelection {
 
         return kmerKey;
     }
+    
+    public static class KmerRecord {
+
+        private String sequence;
+        private KmerForm form;
+
+        public KmerRecord(String sequence) {
+            this.sequence = sequence;
+            this.form = KmerForm.FORWARD;
+        }
+        
+        public KmerRecord(String sequence, KmerForm form) {
+            this.sequence = sequence;
+            this.form = form;
+        }
+
+        public String getSequence() {
+            return this.sequence;
+        }
+
+        public KmerForm getForm() {
+            return this.form;
+        }
+
+        public boolean isForward() {
+            return this.form == KmerForm.FORWARD;
+        }
+
+        public boolean isReverseComplement() {
+            return this.form == KmerForm.REVERSE_COMPLEMENT;
+        }
+
+        public KmerRecord getReverseComplement() {
+            if (this.form == KmerForm.FORWARD) {
+                return new KmerRecord(SequenceHelper.getReverseComplement(this.sequence), KmerForm.REVERSE_COMPLEMENT);
+            } else {
+                return new KmerRecord(SequenceHelper.getReverseComplement(this.sequence), KmerForm.FORWARD);
+            }
+        }
+        
+        public KmerRecord getOriginalForm() {
+            if (this.form == KmerForm.FORWARD) {
+                return this;
+            } else {
+                return getReverseComplement();
+            }
+        }
+
+        public KmerRecord getSelectedKey() {
+            String rcSeq = SequenceHelper.getReverseComplement(this.sequence);
+            if (rcSeq.compareTo(this.sequence) < 0) {
+                if (this.form == KmerForm.FORWARD) {
+                    return new KmerRecord(rcSeq, KmerForm.REVERSE_COMPLEMENT);
+                } else {
+                    return new KmerRecord(rcSeq, KmerForm.FORWARD);
+                }
+            } else {
+                return this;
+            }
+        }
+    }
+
 }

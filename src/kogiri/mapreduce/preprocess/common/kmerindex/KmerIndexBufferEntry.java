@@ -15,15 +15,29 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package kogiri.mapreduce.preprocess.common;
+package kogiri.mapreduce.preprocess.common.kmerindex;
+
+import kogiri.common.hadoop.io.datatypes.CompressedIntArrayWritable;
+import kogiri.common.hadoop.io.datatypes.CompressedSequenceWritable;
 
 /**
  *
  * @author iychoi
  */
-public class PreprocessConstants {
-    public final static String KMER_HISTOGRAM_FILENAME_EXTENSION = "histogram";
-    public final static String READ_INDEX_FILENAME_EXTENSION = "ridx";
-    public final static String KMER_INDEX_INDEX_FILENAME_EXTENSION = "kidx_index";
-    public final static String KMER_INDEX_FILENAME_EXTENSION = "kidx";
+public class KmerIndexBufferEntry {
+    private CompressedSequenceWritable key;
+    private CompressedIntArrayWritable val;
+
+    public KmerIndexBufferEntry(CompressedSequenceWritable key, CompressedIntArrayWritable val) {
+        this.key = key;
+        this.val = val;
+    }
+
+    public CompressedSequenceWritable getKey() {
+        return this.key;
+    }
+
+    public CompressedIntArrayWritable getVal() {
+        return this.val;
+    }
 }

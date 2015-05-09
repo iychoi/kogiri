@@ -24,7 +24,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import kogiri.common.helpers.FileSystemHelper;
 import kogiri.mapreduce.preprocess.common.PreprocessConstants;
-import kogiri.mapreduce.preprocess.common.kmerfrequencyhistogram.KmerFrequencyHistogramPathFilter;
+import kogiri.mapreduce.preprocess.common.kmerhistogram.KmerHistogramPathFilter;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -34,41 +34,41 @@ import org.apache.hadoop.fs.Path;
  *
  * @author iychoi
  */
-public class KmerFrequencyHistogramHelper {
-    private final static String KMER_FREQUENCY_HISTOGRAM_PATH_EXP = ".+\\." + PreprocessConstants.KMER_FREQUENCY_HISTOGRAM_FILENAME_EXTENSION + "$";
-    private final static Pattern KMER_FREQUENCY_HISTOGRAM_PATH_PATTERN = Pattern.compile(KMER_FREQUENCY_HISTOGRAM_PATH_EXP);
+public class KmerHistogramHelper {
+    private final static String KMER_HISTOGRAM_PATH_EXP = ".+\\." + PreprocessConstants.KMER_HISTOGRAM_FILENAME_EXTENSION + "$";
+    private final static Pattern KMER_HISTOGRAM_PATH_PATTERN = Pattern.compile(KMER_HISTOGRAM_PATH_EXP);
     
-    public static String makeKmerFrequencyHistogramFileName(String sampleFileName) {
-        return sampleFileName + "." + PreprocessConstants.KMER_FREQUENCY_HISTOGRAM_FILENAME_EXTENSION;
+    public static String makeKmerHistogramFileName(String sampleFileName) {
+        return sampleFileName + "." + PreprocessConstants.KMER_HISTOGRAM_FILENAME_EXTENSION;
     }
     
     public static String getSampleFileName(String histogramFileName) {
-        int idx = histogramFileName.lastIndexOf("." + PreprocessConstants.KMER_FREQUENCY_HISTOGRAM_FILENAME_EXTENSION);
+        int idx = histogramFileName.lastIndexOf("." + PreprocessConstants.KMER_HISTOGRAM_FILENAME_EXTENSION);
         if(idx > 0) {
             return histogramFileName.substring(0, idx);
         }
         return histogramFileName;
     }
     
-    public static boolean isKmerFrequencyHistogramFile(Path path) {
-        return isKmerFrequencyHistogramFile(path.getName());
+    public static boolean isKmerHistogramFile(Path path) {
+        return isKmerHistogramFile(path.getName());
     }
     
-    public static boolean isKmerFrequencyHistogramFile(String path) {
-        Matcher matcher = KMER_FREQUENCY_HISTOGRAM_PATH_PATTERN.matcher(path.toLowerCase());
+    public static boolean isKmerHistogramFile(String path) {
+        Matcher matcher = KMER_HISTOGRAM_PATH_PATTERN.matcher(path.toLowerCase());
         if(matcher.matches()) {
             return true;
         }
         return false;
     }
     
-    public static Path[] getKmerFrequencyHistogramFilePath(Configuration conf, String[] inputPaths) throws IOException {
-        return getKmerFrequencyHistogramFilePath(conf, FileSystemHelper.makePathFromString(conf, inputPaths));
+    public static Path[] getKmerHistogramFilePath(Configuration conf, String[] inputPaths) throws IOException {
+        return getKmerHistogramFilePath(conf, FileSystemHelper.makePathFromString(conf, inputPaths));
     }
     
-    public static Path[] getKmerFrequencyHistogramFilePath(Configuration conf, Path[] inputPaths) throws IOException {
+    public static Path[] getKmerHistogramFilePath(Configuration conf, Path[] inputPaths) throws IOException {
         List<Path> inputFiles = new ArrayList<Path>();
-        KmerFrequencyHistogramPathFilter filter = new KmerFrequencyHistogramPathFilter();
+        KmerHistogramPathFilter filter = new KmerHistogramPathFilter();
         
         for(Path path : inputPaths) {
             FileSystem fs = path.getFileSystem(conf);

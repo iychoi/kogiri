@@ -15,15 +15,20 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package kogiri.mapreduce.preprocess.common;
+package kogiri.mapreduce.preprocess.common.kmerindex;
+
+import kogiri.mapreduce.preprocess.common.helpers.KmerIndexHelper;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 
 /**
  *
  * @author iychoi
  */
-public class PreprocessConstants {
-    public final static String KMER_HISTOGRAM_FILENAME_EXTENSION = "histogram";
-    public final static String READ_INDEX_FILENAME_EXTENSION = "ridx";
-    public final static String KMER_INDEX_INDEX_FILENAME_EXTENSION = "kidx_index";
-    public final static String KMER_INDEX_FILENAME_EXTENSION = "kidx";
+public class KmerIndexPathFilter implements PathFilter {
+
+    @Override
+    public boolean accept(Path path) {
+        return KmerIndexHelper.isKmerIndexFile(path);
+    }
 }

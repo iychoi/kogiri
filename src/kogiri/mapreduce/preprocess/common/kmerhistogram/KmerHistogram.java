@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package kogiri.mapreduce.preprocess.common.kmerfrequencyhistogram;
+package kogiri.mapreduce.preprocess.common.kmerhistogram;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -41,52 +41,52 @@ import org.codehaus.jackson.annotate.JsonProperty;
  *
  * @author iychoi
  */
-public class KmerFrequencyHistogram {
+public class KmerHistogram {
     
-    private static final Log LOG = LogFactory.getLog(KmerFrequencyHistogram.class);
+    private static final Log LOG = LogFactory.getLog(KmerHistogram.class);
     
-    private static final String HADOOP_CONFIG_KEY = "kogiri.mapreduce.common.kmerfrequencyhistogram";
+    private static final String HADOOP_CONFIG_KEY = "kogiri.mapreduce.common.kmerhistogram";
     
     private static final int SAMPLING_CHARS = 6;
     
     private String sampleName;
     private int kmerSize;
     
-    private Hashtable<String, KmerFrequencyHistogramRecord> recordCache = new Hashtable<String, KmerFrequencyHistogramRecord>();
-    private List<KmerFrequencyHistogramRecord> recordList = new ArrayList<KmerFrequencyHistogramRecord>();
+    private Hashtable<String, KmerHistogramRecord> recordCache = new Hashtable<String, KmerHistogramRecord>();
+    private List<KmerHistogramRecord> recordList = new ArrayList<KmerHistogramRecord>();
     
-    private long totalFrequency = 0;
+    private long totalSampleCount = 0;
     private KmerKeySelection keySelectionAlg = new KmerKeySelection();
     
-    public static KmerFrequencyHistogram createInstance(File file) throws IOException {
+    public static KmerHistogram createInstance(File file) throws IOException {
         JsonSerializer serializer = new JsonSerializer();
-        return (KmerFrequencyHistogram) serializer.fromJsonFile(file, KmerFrequencyHistogram.class);
+        return (KmerHistogram) serializer.fromJsonFile(file, KmerHistogram.class);
     }
     
-    public static KmerFrequencyHistogram createInstance(String json) throws IOException {
+    public static KmerHistogram createInstance(String json) throws IOException {
         JsonSerializer serializer = new JsonSerializer();
-        return (KmerFrequencyHistogram) serializer.fromJson(json, KmerFrequencyHistogram.class);
+        return (KmerHistogram) serializer.fromJson(json, KmerHistogram.class);
     }
     
-    public static KmerFrequencyHistogram createInstance(Configuration conf) throws IOException {
+    public static KmerHistogram createInstance(Configuration conf) throws IOException {
         JsonSerializer serializer = new JsonSerializer();
-        return (KmerFrequencyHistogram) serializer.fromJson(conf.get(HADOOP_CONFIG_KEY), KmerFrequencyHistogram.class);
+        return (KmerHistogram) serializer.fromJson(conf.get(HADOOP_CONFIG_KEY), KmerHistogram.class);
     }
     
-    public static KmerFrequencyHistogram createInstance(Path file, FileSystem fs) throws IOException {
+    public static KmerHistogram createInstance(Path file, FileSystem fs) throws IOException {
         JsonSerializer serializer = new JsonSerializer();
         DataInputStream reader = fs.open(file);
         
         String jsonString = Text.readString(reader);
         reader.close();
         
-        return (KmerFrequencyHistogram) serializer.fromJson(jsonString, KmerFrequencyHistogram.class);
+        return (KmerHistogram) serializer.fromJson(jsonString, KmerHistogram.class);
     }
     
-    public KmerFrequencyHistogram() {
+    public KmerHistogram() {
     }
     
-    public KmerFrequencyHistogram(String sampleName, int kmerSize) {
+    public KmerHistogram(String sampleName, int kmerSize) {
         this.sampleName = sampleName;
         this.kmerSize = kmerSize;
     }
@@ -128,45 +128,45 @@ public class KmerFrequencyHistogram {
     
     @JsonIgnore
     private void add(String kmer) {
-        KmerFrequencyHistogramRecord record = this.recordCache.get(kmer);
+        KmerHistogramRecord record = this.recordCache.get(kmer);
         if(record == null) {
-            record = new KmerFrequencyHistogramRecord(kmer, 1);
+            record = new KmerHistogramRecord(kmer, 1);
             this.recordCache.put(kmer, record);
             this.recordList.add(record);
         } else {
             record.increaseFrequency();
         }
         
-        this.totalFrequency++;
+        this.totalSampleCount++;
     }
     
     @JsonIgnore
-    public long getTotalFrequency() {
-        return this.totalFrequency;
+    public long getTotalSampleCount() {
+        return this.totalSampleCount;
     }
     
     @JsonIgnore
-    public Collection<KmerFrequencyHistogramRecord> getRecord() {
+    public Collection<KmerHistogramRecord> getRecord() {
         return this.recordList;
     }
     
     @JsonProperty("records")
-    public Collection<KmerFrequencyHistogramRecord> getSortedRecord() {
-        Collections.sort(this.recordList, new KmerFrequencyHistogramRecordComparator());
+    public Collection<KmerHistogramRecord> getSortedRecord() {
+        Collections.sort(this.recordList, new KmerHistogramRecordComparator());
         return this.recordList;
     }
     
     @JsonProperty("records")
-    public void addRecord(Collection<KmerFrequencyHistogramRecord> records) {
-        for(KmerFrequencyHistogramRecord record : records) {
+    public void addRecord(Collection<KmerHistogramRecord> records) {
+        for(KmerHistogramRecord record : records) {
             addRecord(record);
         }
         
     }
     
     @JsonIgnore
-    public void addRecord(KmerFrequencyHistogramRecord record) {
-        KmerFrequencyHistogramRecord existingRecord = this.recordCache.get(record.getKmer());
+    public void addRecord(KmerHistogramRecord record) {
+        KmerHistogramRecord existingRecord = this.recordCache.get(record.getKmer());
         if(existingRecord == null) {
             this.recordCache.put(record.getKmer(), record);
             this.recordList.add(record);
@@ -174,7 +174,7 @@ public class KmerFrequencyHistogram {
             existingRecord.increaseFrequency(record.getFrequency());
         }
         
-        this.totalFrequency += record.getFrequency();
+        this.totalSampleCount += record.getFrequency();
     }
     
     @JsonIgnore
