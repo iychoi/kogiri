@@ -79,7 +79,7 @@ public class KmerIndexBuilderPartitioner extends Partitioner<MultiFileCompressed
             Path histogramHadoopPath = new Path(this.ppConfig.getKmerHistogramPath(), KmerHistogramHelper.makeKmerHistogramFileName(filename));
             FileSystem fs = histogramHadoopPath.getFileSystem(this.conf);
             if (fs.exists(histogramHadoopPath)) {
-                histogram = KmerHistogram.createInstance(histogramHadoopPath, fs);
+                histogram = KmerHistogram.createInstance(fs, histogramHadoopPath);
             } else {
                 throw new IOException("k-mer histogram is not found in given paths");
             }

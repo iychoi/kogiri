@@ -17,8 +17,6 @@
  */
 package kogiri.mapreduce.preprocess.common.kmerhistogram;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,7 +31,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.Text;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -70,17 +67,12 @@ public class KmerHistogram {
     
     public static KmerHistogram createInstance(Configuration conf) throws IOException {
         JsonSerializer serializer = new JsonSerializer();
-        return (KmerHistogram) serializer.fromJson(conf.get(HADOOP_CONFIG_KEY), KmerHistogram.class);
+        return (KmerHistogram) serializer.fromJsonConfiguration(conf, HADOOP_CONFIG_KEY, KmerHistogram.class);
     }
     
-    public static KmerHistogram createInstance(Path file, FileSystem fs) throws IOException {
+    public static KmerHistogram createInstance(FileSystem fs, Path file) throws IOException {
         JsonSerializer serializer = new JsonSerializer();
-        DataInputStream reader = fs.open(file);
-        
-        String jsonString = Text.readString(reader);
-        reader.close();
-        
-        return (KmerHistogram) serializer.fromJson(jsonString, KmerHistogram.class);
+        return (KmerHistogram) serializer.fromJsonFile(fs, file, KmerHistogram.class);
     }
     
     public KmerHistogram() {
@@ -185,22 +177,12 @@ public class KmerHistogram {
     @JsonIgnore
     public void saveTo(Configuration conf) throws IOException {
         JsonSerializer serializer = new JsonSerializer();
-        String jsonString = serializer.toJson(this);
-        
-        conf.set(HADOOP_CONFIG_KEY, jsonString);
+        serializer.toJsonConfiguration(conf, HADOOP_CONFIG_KEY, this);
     }
     
     @JsonIgnore
-    public void saveTo(Path file, FileSystem fs) throws IOException {
-        if(!fs.exists(file.getParent())) {
-            fs.mkdirs(file.getParent());
-        }
-        
+    public void saveTo(FileSystem fs, Path file) throws IOException {
         JsonSerializer serializer = new JsonSerializer();
-        String jsonString = serializer.toJson(this);
-        
-        DataOutputStream writer = fs.create(file, true, 64 * 1024);
-        new Text(jsonString).write(writer);
-        writer.close();
+        serializer.toJsonFile(fs, file, this);
     }
 }

@@ -52,7 +52,7 @@ public class KmerIndexReader extends AKmerIndexReader {
         if(indexPaths.length == 1) {
             this.kmerIndexReader = new SingleKmerIndexReader(fs, indexPaths[0], beginKey, endKey, conf);    
         } else {
-            this.kmerIndexReader = new MultiKmerIndexReader(fs, indexPaths, kmerIndexChunkInfoPath, beginKey, endKey, context, conf);
+            this.kmerIndexReader = new ChunkedKmerIndexReader(fs, indexPaths, kmerIndexChunkInfoPath, beginKey, endKey, context, conf);
         }
     }
     

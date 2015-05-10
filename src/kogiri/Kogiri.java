@@ -34,7 +34,8 @@ public class Kogiri {
     
     private static final String[] CLASS_SEARCH_PACKAGES = {
         "kogiri.preprocess",
-        "kogiri.mapreduce.preprocess.indexing.stage1"
+        "kogiri.mapreduce.preprocess.indexing.stage1",
+        "kogiri.mapreduce.preprocess.indexing.stage2"
     };
     
     private static void invokeClass(Class clazz, String[] args) throws Exception {

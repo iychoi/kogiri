@@ -59,17 +59,12 @@ public class KmerIndexIndex {
     
     public static KmerIndexIndex createInstance(Configuration conf) throws IOException {
         JsonSerializer serializer = new JsonSerializer();
-        return (KmerIndexIndex) serializer.fromJson(conf.get(HADOOP_CONFIG_KEY), KmerIndexIndex.class);
+        return (KmerIndexIndex) serializer.fromJsonConfiguration(conf, HADOOP_CONFIG_KEY, KmerIndexIndex.class);
     }
     
-    public static KmerIndexIndex createInstance(Path file, FileSystem fs) throws IOException {
+    public static KmerIndexIndex createInstance(FileSystem fs, Path file) throws IOException {
         JsonSerializer serializer = new JsonSerializer();
-        DataInputStream reader = fs.open(file);
-        
-        String jsonString = Text.readString(reader);
-        reader.close();
-        
-        return (KmerIndexIndex) serializer.fromJson(jsonString, KmerIndexIndex.class);
+        return (KmerIndexIndex) serializer.fromJsonFile(fs, file, KmerIndexIndex.class);
     }
     
     public KmerIndexIndex() {
@@ -104,22 +99,12 @@ public class KmerIndexIndex {
     @JsonIgnore
     public void saveTo(Configuration conf) throws IOException {
         JsonSerializer serializer = new JsonSerializer();
-        String jsonString = serializer.toJson(this);
-        
-        conf.set(HADOOP_CONFIG_KEY, jsonString);
+        serializer.toJsonConfiguration(conf, HADOOP_CONFIG_KEY, this);
     }
     
     @JsonIgnore
-    public void saveTo(Path file, FileSystem fs) throws IOException {
-        if(!fs.exists(file.getParent())) {
-            fs.mkdirs(file.getParent());
-        }
-        
+    public void saveTo(FileSystem fs, Path file) throws IOException {
         JsonSerializer serializer = new JsonSerializer();
-        String jsonString = serializer.toJson(this);
-        
-        DataOutputStream writer = fs.create(file, true, 64 * 1024);
-        new Text(jsonString).write(writer);
-        writer.close();
+        serializer.toJsonFile(fs, file, this);
     }
 }

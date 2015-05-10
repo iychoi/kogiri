@@ -92,6 +92,6 @@ public class ReadIndexBuilderMapper extends Mapper<LongWritable, FastaRead, Long
         Path histogramOutputFile = new Path(this.ppConfig.getKmerHistogramPath(), histogramFileName);
         FileSystem outputFileSystem = histogramOutputFile.getFileSystem(context.getConfiguration());
 
-        this.histogram.saveTo(histogramOutputFile, outputFileSystem);
+        this.histogram.saveTo(outputFileSystem, histogramOutputFile);
     }
 }

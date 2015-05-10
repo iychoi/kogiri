@@ -25,6 +25,8 @@ import kogiri.common.helpers.PathHelper;
 import kogiri.common.json.JsonSerializer;
 import kogiri.mapreduce.common.config.ClusterConfiguration;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -65,7 +67,12 @@ public class PreprocessorConfig {
     
     public static PreprocessorConfig createInstance(Configuration conf) throws IOException {
         JsonSerializer serializer = new JsonSerializer();
-        return (PreprocessorConfig) serializer.fromJson(conf.get(HADOOP_CONFIG_KEY), PreprocessorConfig.class);
+        return (PreprocessorConfig) serializer.fromJsonConfiguration(conf, HADOOP_CONFIG_KEY, PreprocessorConfig.class);
+    }
+    
+    public static PreprocessorConfig createInstance(FileSystem fs, Path file) throws IOException {
+        JsonSerializer serializer = new JsonSerializer();
+        return (PreprocessorConfig) serializer.fromJsonFile(fs, file, PreprocessorConfig.class);
     }
     
     public PreprocessorConfig() {
@@ -168,8 +175,12 @@ public class PreprocessorConfig {
     @JsonIgnore
     public void saveTo(Configuration conf) throws IOException {
         JsonSerializer serializer = new JsonSerializer();
-        String jsonString = serializer.toJson(this);
-        
-        conf.set(HADOOP_CONFIG_KEY, jsonString);
+        serializer.toJsonConfiguration(conf, HADOOP_CONFIG_KEY, this);
+    }
+    
+    @JsonIgnore
+    public void saveTo(FileSystem fs, Path file) throws IOException {
+        JsonSerializer serializer = new JsonSerializer();
+        serializer.toJsonFile(fs, file, this);
     }
 }

@@ -36,9 +36,9 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
  *
  * @author iychoi
  */
-public class MultiKmerIndexReader extends AKmerIndexReader {
+public class ChunkedKmerIndexReader extends AKmerIndexReader {
     
-    private static final Log LOG = LogFactory.getLog(MultiKmerIndexReader.class);
+    private static final Log LOG = LogFactory.getLog(ChunkedKmerIndexReader.class);
     
     private static final int BUFFER_SIZE = 100;
     
@@ -55,16 +55,16 @@ public class MultiKmerIndexReader extends AKmerIndexReader {
     
     private int currentIndex;
     
-    public MultiKmerIndexReader(FileSystem fs, String[] indexPaths, String kmerIndexChunkInfoPath, TaskAttemptContext context, Configuration conf) throws IOException {
-        initialize(fs, indexPaths, kmerIndexChunkInfoPath, null, null, context, conf);
+    public ChunkedKmerIndexReader(FileSystem fs, String[] indexPaths, String kmerIndexIndexPath, TaskAttemptContext context, Configuration conf) throws IOException {
+        initialize(fs, indexPaths, kmerIndexIndexPath, null, null, context, conf);
     }
     
-    public MultiKmerIndexReader(FileSystem fs, String[] indexPaths, String kmerIndexChunkInfoPath, CompressedSequenceWritable beginKey, CompressedSequenceWritable endKey, TaskAttemptContext context, Configuration conf) throws IOException {
-        initialize(fs, indexPaths, kmerIndexChunkInfoPath, beginKey, endKey, context, conf);
+    public ChunkedKmerIndexReader(FileSystem fs, String[] indexPaths, String kmerIndexIndexPath, CompressedSequenceWritable beginKey, CompressedSequenceWritable endKey, TaskAttemptContext context, Configuration conf) throws IOException {
+        initialize(fs, indexPaths, kmerIndexIndexPath, beginKey, endKey, context, conf);
     }
     
-    public MultiKmerIndexReader(FileSystem fs, String[] indexPaths, String kmerIndexChunkInfoPath, String beginKey, String endKey, TaskAttemptContext context, Configuration conf) throws IOException {
-        initialize(fs, indexPaths, kmerIndexChunkInfoPath, new CompressedSequenceWritable(beginKey), new CompressedSequenceWritable(endKey), context, conf);
+    public ChunkedKmerIndexReader(FileSystem fs, String[] indexPaths, String kmerIndexIndexPath, String beginKey, String endKey, TaskAttemptContext context, Configuration conf) throws IOException {
+        initialize(fs, indexPaths, kmerIndexIndexPath, new CompressedSequenceWritable(beginKey), new CompressedSequenceWritable(endKey), context, conf);
     }
     
     private String[] reorderIndexParts(String[] indexPaths) {
@@ -108,7 +108,7 @@ public class MultiKmerIndexReader extends AKmerIndexReader {
         }
         String fastaFilename = KmerIndexHelper.getFastaFileName(this.indexPaths[0]);
         Path indexIndexPath = new Path(kmerIndexIndexPath, KmerIndexHelper.makeKmerIndexIndexFileName(fastaFilename));
-        KmerIndexIndex indexIndex = KmerIndexIndex.createInstance(indexIndexPath, fs);
+        KmerIndexIndex indexIndex = KmerIndexIndex.createInstance(fs, indexIndexPath);
         
         this.chunkLastKeys = indexIndex.getSortedLastKeys().toArray(new String[0]);
         

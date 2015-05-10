@@ -63,17 +63,12 @@ public class NamedOutputs {
     
     public static NamedOutputs createInstance(Configuration conf) throws IOException {
         JsonSerializer serializer = new JsonSerializer();
-        return (NamedOutputs) serializer.fromJson(conf.get(HADOOP_CONFIG_KEY), NamedOutputs.class);
+        return (NamedOutputs) serializer.fromJsonConfiguration(conf, HADOOP_CONFIG_KEY, NamedOutputs.class);
     }
     
-    public static NamedOutputs createInstance(Path file, FileSystem fs) throws IOException {
+    public static NamedOutputs createInstance(FileSystem fs, Path file) throws IOException {
         JsonSerializer serializer = new JsonSerializer();
-        DataInputStream reader = fs.open(file);
-        
-        String jsonString = Text.readString(reader);
-        reader.close();
-        
-        return (NamedOutputs) serializer.fromJson(jsonString, NamedOutputs.class);
+        return (NamedOutputs) serializer.fromJsonFile(fs, file, NamedOutputs.class);
     }
     
     public NamedOutputs() {
@@ -212,23 +207,13 @@ public class NamedOutputs {
     @JsonIgnore
     public void saveTo(Configuration conf) throws IOException {
         JsonSerializer serializer = new JsonSerializer();
-        String jsonString = serializer.toJson(this);
-        
-        conf.set(HADOOP_CONFIG_KEY, jsonString);
+        serializer.toJsonConfiguration(conf, HADOOP_CONFIG_KEY, this);
     }
     
     @JsonIgnore
-    public void saveTo(Path file, FileSystem fs) throws IOException {
-        if(!fs.exists(file.getParent())) {
-            fs.mkdirs(file.getParent());
-        }
-        
+    public void saveTo(FileSystem fs, Path file) throws IOException {
         JsonSerializer serializer = new JsonSerializer();
-        String jsonString = serializer.toJson(this);
-        
-        DataOutputStream writer = fs.create(file, true, 64 * 1024);
-        new Text(jsonString).write(writer);
-        writer.close();
+        serializer.toJsonFile(fs, file, this);
     }
     
     @JsonIgnore

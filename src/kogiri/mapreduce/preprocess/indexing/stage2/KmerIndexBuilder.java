@@ -261,7 +261,7 @@ public class KmerIndexBuilder extends Configured implements Tool, IPreprocessSta
             String kmerFilename = KmerIndexHelper.getFastaFileName(indiceGroup[0]);
             Path outputFile = new Path(indexPath, KmerIndexHelper.makeKmerIndexIndexFileName(kmerFilename));
             LOG.info("Creating an index of k-mer index file : " + outputFile.toString());
-            indexIndex.saveTo(outputFile, outputFile.getFileSystem(conf));
+            indexIndex.saveTo(outputFile.getFileSystem(conf), outputFile);
         }
     }
 }
