@@ -4,7 +4,7 @@
 
 dist_dir="dist"
 allinone_dist_jar="$dist_dir/kogiri-all.jar"
-build_script="script/package_allinone.sh"
+build_script="scripts/package_allinone.sh"
 
 mer_size="20"
 input_path="test/sample"
@@ -30,14 +30,7 @@ fi
 
 if [ $? == 0 ]
 then
-    # remove old output
-    if [ -d $output_path ]
-    then
-        echo "output directory exists, removing..."
-        rm -rf $output_path
-    fi
-    
     echo "run kogiri..."
-    hadoop jar $allinone_dist_jar preprocess -k $mer_size -o $output_path $input_path
+    hadoop jar $allinone_dist_jar preprocess $@ -k $mer_size -o $output_path $input_path
 fi
 
