@@ -25,10 +25,10 @@ import org.apache.hadoop.fs.PathFilter;
  *
  * @author iychoi
  */
-public class KmerIndexPathFilter implements PathFilter {
+public class KmerIndexPartPathFilter implements PathFilter {
 
     @Override
     public boolean accept(Path path) {
-        return KmerIndexHelper.isKmerIndexFile(path);
+        return KmerIndexHelper.isKmerIndexPartFile(path);
     }
 }

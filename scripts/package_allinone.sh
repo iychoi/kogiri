@@ -2,12 +2,15 @@
 
 # build all-in-one jar package
 
-dist_dir="../dist"
+dist_dir="dist"
 dist_jar="$dist_dir/kogiri.jar"
 allinone_dist_jar="$dist_dir/kogiri-all.jar"
 
 change_dir() {
-	cd ..
+    if [[ $PWD == *"/scripts" ]]
+    then
+    	cd ..
+	fi
 }
 
 build_jar() {
@@ -18,6 +21,8 @@ build_jar_allinone() {
     ant allinone
 }
 
+# move to right directory
+change_dir
 
 echo "Build Kogiri all-in-one jar package"
 if [ -f $allinone_dist_jar ]
@@ -25,9 +30,6 @@ then
     echo "all-in-one package already exists!"
     exit 2
 fi
-
-# move to parent
-change_dir
 
 if [ ! -f $dist_jar ]
 then
@@ -44,7 +46,7 @@ fi
 if [ $? == 0 ]
 then
     echo "Building all-in-one jar package succeeded!"
-    echo "You can find jar package in a ../dist directory"
+    echo "You can find jar package in a dist directory"
 else
     echo "Building all-in-one jar package failed!"
 fi

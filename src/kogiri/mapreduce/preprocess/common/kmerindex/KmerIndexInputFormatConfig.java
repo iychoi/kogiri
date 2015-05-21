@@ -17,42 +17,79 @@
  */
 package kogiri.mapreduce.preprocess.common.kmerindex;
 
+import java.io.File;
+import java.io.IOException;
+import kogiri.common.json.JsonSerializer;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  *
  * @author iychoi
  */
 public class KmerIndexInputFormatConfig {
-    private final static String CONF_KMER_INDEX_INPUT_FORMAT_KMER_SIZE = "edu.arizona.cs.mrpkm.kmeridx.kmer_size";
-    private final static String CONF_KMER_INDEX_CHUNK_INFO_PATH = "edu.arizona.cs.mrpkm.kmeridx.kmeridx_chunkinfo";
+    
+    private static final String HADOOP_CONFIG_KEY = "kogiri.mapreduce.common.kmerindexinputformatconfig";
     
     private int kmerSize;
-    private String kmerIndexChunkInfoPath;
+    private String kmerIndexIndexPath;
     
+    public static KmerIndexInputFormatConfig createInstance(File file) throws IOException {
+        JsonSerializer serializer = new JsonSerializer();
+        return (KmerIndexInputFormatConfig) serializer.fromJsonFile(file, KmerIndexInputFormatConfig.class);
+    }
+    
+    public static KmerIndexInputFormatConfig createInstance(String json) throws IOException {
+        JsonSerializer serializer = new JsonSerializer();
+        return (KmerIndexInputFormatConfig) serializer.fromJson(json, KmerIndexInputFormatConfig.class);
+    }
+    
+    public static KmerIndexInputFormatConfig createInstance(Configuration conf) throws IOException {
+        JsonSerializer serializer = new JsonSerializer();
+        return (KmerIndexInputFormatConfig) serializer.fromJsonConfiguration(conf, HADOOP_CONFIG_KEY, KmerIndexInputFormatConfig.class);
+    }
+    
+    public static KmerIndexInputFormatConfig createInstance(FileSystem fs, Path file) throws IOException {
+        JsonSerializer serializer = new JsonSerializer();
+        return (KmerIndexInputFormatConfig) serializer.fromJsonFile(fs, file, KmerIndexInputFormatConfig.class);
+    }
+    
+    public KmerIndexInputFormatConfig() {
+        
+    }
+    
+    @JsonProperty("kmer_size")
     public void setKmerSize(int kmerSize) {
         this.kmerSize = kmerSize;
     }
     
+    @JsonProperty("kmer_size")
     public int getKmerSize() {
         return this.kmerSize;
     }
     
-    public void setKmerIndexChunkInfoPath(String kmerIndexChunkInfoPath) {
-        this.kmerIndexChunkInfoPath = kmerIndexChunkInfoPath;
+    @JsonProperty("kmerindex_index_path")
+    public void setKmerIndexIndexPath(String kmerIndexIndexPath) {
+        this.kmerIndexIndexPath = kmerIndexIndexPath;
     }
     
-    public String getKmerIndexChunkInfoPath() {
-        return this.kmerIndexChunkInfoPath;
+    @JsonProperty("kmerindex_index_path")
+    public String getKmerIndexIndexPath() {
+        return this.kmerIndexIndexPath;
     }
     
-    public void saveTo(Configuration conf) {
-        conf.setInt(CONF_KMER_INDEX_INPUT_FORMAT_KMER_SIZE, this.kmerSize);
-        conf.set(CONF_KMER_INDEX_CHUNK_INFO_PATH, this.kmerIndexChunkInfoPath);
+    @JsonIgnore
+    public void saveTo(Configuration conf) throws IOException {
+        JsonSerializer serializer = new JsonSerializer();
+        serializer.toJsonConfiguration(conf, HADOOP_CONFIG_KEY, this);
     }
     
-    public void loadFrom(Configuration conf) {
-        this.kmerSize = conf.getInt(CONF_KMER_INDEX_INPUT_FORMAT_KMER_SIZE, 0);
-        this.kmerIndexChunkInfoPath = conf.get(CONF_KMER_INDEX_CHUNK_INFO_PATH);
+    @JsonIgnore
+    public void saveTo(FileSystem fs, Path file) throws IOException {
+        JsonSerializer serializer = new JsonSerializer();
+        serializer.toJsonFile(fs, file, this);
     }
 }

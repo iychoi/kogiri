@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import kogiri.common.hadoop.io.datatypes.CompressedIntArrayWritable;
 import kogiri.common.hadoop.io.datatypes.CompressedSequenceWritable;
-import kogiri.common.helpers.FileSystemHelper;
 import kogiri.common.helpers.SequenceHelper;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -54,15 +53,10 @@ public class KmerIndexRecordReader extends RecordReader<CompressedSequenceWritab
         this.conf = context.getConfiguration();
         this.inputIndexPaths = kmerIndexSplit.getIndexFilePaths();
         
-        this.inputFormatConfig = new KmerIndexInputFormatConfig();
-        this.inputFormatConfig.loadFrom(this.conf);
+        this.inputFormatConfig = KmerIndexInputFormatConfig.createInstance(this.conf);
         
         FileSystem fs = this.inputIndexPaths[0].getFileSystem(this.conf);
-        if(this.inputIndexPaths.length == 1) {
-            this.indexReader = new SingleKmerIndexReader(fs, FileSystemHelper.makeStringFromPath(this.inputIndexPaths)[0], this.conf);
-        } else {
-            this.indexReader = new ChunkedKmerIndexReader(fs, FileSystemHelper.makeStringFromPath(this.inputIndexPaths), this.inputFormatConfig.getKmerIndexChunkInfoPath(), context, this.conf);
-        }
+        this.indexReader = new KmerIndexReader(fs, new Path(this.inputFormatConfig.getKmerIndexIndexPath()), context, this.conf);
         
         this.currentProgress = BigInteger.ZERO;
         StringBuilder endKmer = new StringBuilder();

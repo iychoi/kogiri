@@ -22,6 +22,7 @@ import kogiri.mapreduce.common.cmdargs.CommandArgumentsParser;
 import kogiri.mapreduce.preprocess.common.PreprocessorConfig;
 import kogiri.mapreduce.preprocess.indexing.stage1.ReadIndexBuilder;
 import kogiri.mapreduce.preprocess.indexing.stage2.KmerIndexBuilder;
+import kogiri.mapreduce.preprocess.indexing.stage3.KmerStatisticsBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -78,6 +79,10 @@ public class Preprocessor {
         if(res == 0) {
             KmerIndexBuilder stage2 = new KmerIndexBuilder();
             res = stage2.run(ppConfig);
+            if(res == 0) {
+                KmerStatisticsBuilder stage3 = new KmerStatisticsBuilder();
+                res = stage3.run(ppConfig);
+            }
         }
         
         System.exit(res);
@@ -96,5 +101,7 @@ public class Preprocessor {
         System.out.println("> \tBuild ReadIndex + Generate k-mer histogram");
         System.out.println("> stage2");
         System.out.println("> \tBuild KmerIndex");
+        System.out.println("> stage3");
+        System.out.println("> \tBuild KmerStatistics");
     }
 }

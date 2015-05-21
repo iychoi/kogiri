@@ -22,8 +22,9 @@ package kogiri.mapreduce.preprocess.common;
  * @author iychoi
  */
 public class PreprocessConstants {
-    public final static String KMER_HISTOGRAM_FILENAME_EXTENSION = "histogram";
+    public final static String KMER_HISTOGRAM_FILENAME_EXTENSION = "khist";
     public final static String READ_INDEX_FILENAME_EXTENSION = "ridx";
-    public final static String KMER_INDEX_INDEX_FILENAME_EXTENSION = "kidx_index";
-    public final static String KMER_INDEX_FILENAME_EXTENSION = "kidx";
+    public final static String KMER_INDEX_INDEX_FILENAME_EXTENSION = "kidx";
+    public final static String KMER_INDEX_PART_FILENAME_EXTENSION = "kidxc";
+    public final static String KMER_STATISTICS_FILENAME_EXTENSION = "kstat";
 }

@@ -185,7 +185,7 @@ public class KmerIndexBuilder extends Configured implements Tool, IPreprocessSta
                 commitRoundIndexOutputFiles(new Path(roundOutputPath), new Path(ppConfig.getKmerIndexPath()), job.getConfiguration(), namedOutputs, ppConfig.getKmerSize());
                 
                 // create index of index
-                createIndexOfIndex(new Path(ppConfig.getKmerIndexPath()), job.getConfiguration());
+                createIndexOfIndex(new Path(ppConfig.getKmerIndexPath()), roundInputFile, job.getConfiguration(), ppConfig.getKmerSize());
             }
             
             if(!result) {
@@ -227,7 +227,7 @@ public class KmerIndexBuilder extends Configured implements Tool, IPreprocessSta
                     NamedOutputRecord namedOutput = namedOutputs.getRecordFromMROutput(entryPath);
                     if(namedOutput != null) {
                         int mapreduceID = MapReduceHelper.getMapReduceID(entryPath);
-                        Path toPath = new Path(finalOutputPath, KmerIndexHelper.makeKmerIndexFileName(namedOutput.getFilename(), kmerSize, mapreduceID));
+                        Path toPath = new Path(finalOutputPath, KmerIndexHelper.makeKmerIndexPartFileName(namedOutput.getFilename(), kmerSize, mapreduceID));
                         
                         LOG.info("output : " + entryPath.toString());
                         LOG.info("renamed to : " + toPath.toString());
@@ -242,26 +242,22 @@ public class KmerIndexBuilder extends Configured implements Tool, IPreprocessSta
         fs.delete(MROutputPath, true);
     }
     
-    private void createIndexOfIndex(Path indexPath, Configuration conf) throws IOException {
-        // Inputs
-        Path[] indexFiles = KmerIndexHelper.getAllKmerIndexFilePath(conf, indexPath);
-        Path[][] indiceGroups = KmerIndexHelper.groupKmerIndices(indexFiles);
+    private void createIndexOfIndex(Path indexPath, Path inputPath, Configuration conf, int kmerSize) throws IOException {
+        String kmerIndexIndexFileName = KmerIndexHelper.makeKmerIndexIndexFileName(inputPath, kmerSize);
+        Path kmerIndexIndexFilePath = new Path(indexPath, kmerIndexIndexFileName);
+        Path[] indexFiles = KmerIndexHelper.getKmerIndexPartFilePath(conf, kmerIndexIndexFilePath);
         
-        for(Path[] indiceGroup : indiceGroups) {
-            KmerIndexIndex indexIndex = new KmerIndexIndex();
-            for(Path indexFile : indiceGroup) {
-                LOG.info("Reading the final key from " + indexFile.toString());
-                MapFile.Reader reader = new MapFile.Reader(indexFile.getFileSystem(conf), indexFile.toString(), conf);
-                CompressedSequenceWritable finalKey = new CompressedSequenceWritable();
-                reader.finalKey(finalKey);
-                indexIndex.addLastKey(finalKey.getSequence());
-                reader.close();
-            }
-            
-            String kmerFilename = KmerIndexHelper.getFastaFileName(indiceGroup[0]);
-            Path outputFile = new Path(indexPath, KmerIndexHelper.makeKmerIndexIndexFileName(kmerFilename));
-            LOG.info("Creating an index of k-mer index file : " + outputFile.toString());
-            indexIndex.saveTo(outputFile.getFileSystem(conf), outputFile);
+        KmerIndexIndex indexIndex = new KmerIndexIndex();
+        for(Path indexFile : indexFiles) {
+            LOG.info("Reading the final key from " + indexFile.toString());
+            MapFile.Reader reader = new MapFile.Reader(indexFile.getFileSystem(conf), indexFile.toString(), conf);
+            CompressedSequenceWritable finalKey = new CompressedSequenceWritable();
+            reader.finalKey(finalKey);
+            indexIndex.addLastKey(finalKey.getSequence());
+            reader.close();
         }
+
+        LOG.info("Creating an index file : " + kmerIndexIndexFilePath.toString());
+        indexIndex.saveTo(kmerIndexIndexFilePath.getFileSystem(conf), kmerIndexIndexFilePath);
     }
 }

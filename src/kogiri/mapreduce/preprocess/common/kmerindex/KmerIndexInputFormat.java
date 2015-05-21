@@ -53,7 +53,7 @@ public class KmerIndexInputFormat extends SequenceFileInputFormat<CompressedSequ
         return new KmerIndexRecordReader();
     }
     
-    public static void setInputFormatConfig(JobContext job, KmerIndexInputFormatConfig inputFormatConfig) {
+    public static void setInputFormatConfig(JobContext job, KmerIndexInputFormatConfig inputFormatConfig) throws IOException {
         inputFormatConfig.saveTo(job.getConfiguration());
     }
     
@@ -110,7 +110,7 @@ public class KmerIndexInputFormat extends SequenceFileInputFormat<CompressedSequ
         if (jobFilter != null) {
             filters.add(jobFilter);
         }
-        filters.add(new KmerIndexPathFilter());
+        filters.add(new KmerIndexPartPathFilter());
         PathFilter inputFilter = new MultiPathFilter(filters);
 
         for (int i = 0; i < dirs.length; ++i) {
