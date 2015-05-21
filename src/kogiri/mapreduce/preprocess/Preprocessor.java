@@ -33,6 +33,10 @@ import org.apache.commons.logging.LogFactory;
 public class Preprocessor {
     private static final Log LOG = LogFactory.getLog(Preprocessor.class);
     
+    private static int RUN_STAGE_1 = 0x01;
+    private static int RUN_STAGE_2 = 0x02;
+    private static int RUN_STAGE_3 = 0x04;
+    
     private static boolean isHelpParam(String[] args) {
         if(args.length < 1 || 
                 args[0].equalsIgnoreCase("-h") ||
@@ -42,15 +46,35 @@ public class Preprocessor {
         return false;
     }
     
-    private static int getPreprocessorConfigPathIndex(String[] args) {
+    private static int checkRunStages(String[] args) {
+        int runStages = 0;
+        for(String arg : args) {
+            if(arg.equalsIgnoreCase("stage1")) {
+                runStages |= RUN_STAGE_1;
+            } else if(arg.equalsIgnoreCase("stage2")) {
+                runStages |= RUN_STAGE_2;
+            } else if(arg.equalsIgnoreCase("stage3")) {
+                runStages |= RUN_STAGE_3;
+            }
+        }
+        
+        if(runStages == 0) {
+            runStages |= RUN_STAGE_1;
+            runStages |= RUN_STAGE_2;
+            runStages |= RUN_STAGE_3;
+        }
+        return runStages;
+    }
+    
+    private static String getPreprocessorConfigPath(String[] args) {
         for(int i=0;i<args.length;i++) {
             if(args[i].equalsIgnoreCase("--json")) {
                 if(args.length >= i+1) {
-                    return i+1;
+                    return args[i+1];
                 }
             }
         }
-        return -1;
+        return null;
     }
     
     public static void main(String[] args) throws Exception {
@@ -60,9 +84,9 @@ public class Preprocessor {
         }
         
         PreprocessorConfig ppConfig;
-        int ppConfigIndex = getPreprocessorConfigPathIndex(args);
-        if(ppConfigIndex >= 0) {
-            ppConfig = PreprocessorConfig.createInstance(new File(args[ppConfigIndex]));
+        String ppConfigPath = getPreprocessorConfigPath(args);
+        if(ppConfigPath != null) {
+            ppConfig = PreprocessorConfig.createInstance(new File(ppConfigPath));
         } else {
             CommandArgumentsParser<PreprocessorCmdArgs> parser = new CommandArgumentsParser<PreprocessorCmdArgs>();
             PreprocessorCmdArgs cmdParams = new PreprocessorCmdArgs();
@@ -74,15 +98,25 @@ public class Preprocessor {
             ppConfig = cmdParams.getPreprocessorConfig();
         }
         
-        ReadIndexBuilder stage1 = new ReadIndexBuilder();
-        int res = stage1.run(ppConfig);
-        if(res == 0) {
+        int runStages = checkRunStages(args);
+        
+        int res = 0;
+        if((runStages & RUN_STAGE_1) == RUN_STAGE_1 &&
+                res == 0) {
+            ReadIndexBuilder stage1 = new ReadIndexBuilder();
+            res = stage1.run(ppConfig);
+        }
+        
+        if((runStages & RUN_STAGE_2) == RUN_STAGE_2 &&
+                res == 0) {
             KmerIndexBuilder stage2 = new KmerIndexBuilder();
             res = stage2.run(ppConfig);
-            if(res == 0) {
-                KmerStatisticsBuilder stage3 = new KmerStatisticsBuilder();
-                res = stage3.run(ppConfig);
-            }
+        }
+
+        if((runStages & RUN_STAGE_3) == RUN_STAGE_3 &&
+                res == 0) {
+            KmerStatisticsBuilder stage3 = new KmerStatisticsBuilder();
+            res = stage3.run(ppConfig);
         }
         
         System.exit(res);

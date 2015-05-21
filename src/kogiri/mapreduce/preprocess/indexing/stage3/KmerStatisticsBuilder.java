@@ -113,6 +113,10 @@ public class KmerStatisticsBuilder extends Configured implements Tool, IPreproce
         
         Path[] inputFiles = KmerIndexHelper.getAllKmerIndexIndexFilePath(conf, ppConfig.getKmerIndexPath());
         
+        for(Path inputFile : inputFiles) {
+            LOG.info(inputFile);
+        }
+        
         boolean job_result = true;
         List<Job> jobs = new ArrayList<Job>();
         
@@ -188,6 +192,7 @@ public class KmerStatisticsBuilder extends Configured implements Tool, IPreproce
 
                     KmerStatistics statistics = new KmerStatistics();
                     statistics.setSampleName(uniqueCounter.getName());
+                    statistics.setKmerSize(ppConfig.getKmerSize());
                     statistics.setUniqueKmers(count);
                     statistics.setTotalKmers(length);
                     statistics.setAverageFrequency(real_mean);

@@ -198,18 +198,18 @@ public class KmerIndexHelper {
             if(fs.exists(path)) {
                 FileStatus status = fs.getFileStatus(path);
                 if(status.isDir()) {
-                    if(filter.accept(path)) {
-                        inputFiles.add(path);
-                    } else {
-                        // check child
-                        FileStatus[] entries = fs.listStatus(path);
-                        for (FileStatus entry : entries) {
-                            if(entry.isDir()) {
-                                if (filter.accept(entry.getPath())) {
-                                    inputFiles.add(entry.getPath());
-                                }
+                    // check child
+                    FileStatus[] entries = fs.listStatus(path);
+                    for (FileStatus entry : entries) {
+                        if(entry.isFile()) {
+                            if (filter.accept(entry.getPath())) {
+                                inputFiles.add(entry.getPath());
                             }
                         }
+                    }
+                } else if(status.isFile()) {
+                    if (filter.accept(status.getPath())) {
+                        inputFiles.add(status.getPath());
                     }
                 }
             }
