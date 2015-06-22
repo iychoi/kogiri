@@ -1,11 +1,6 @@
 # kogiri
 Massive Comparative Analytic Toolkit for Metagenomics
 
-
-Notice
-------
-This project is from PKM(https://github.com/iychoi/MR-PKM) project. This project is identical to PKM but under heavy refactoring to provide a better user interface and reusable components for extensions.  
-
 Build
 -----
 This project uses "ant" build system. Therefore, user should install proper version of "java" and "ant" to build the project.
@@ -30,6 +25,20 @@ cd scripts
 ```
 
 Created jar packages will be located in "/dist" directory.
+
+Preprocess
+----------
+Kogiri preprocesses FASTA sample files to find matching k-mers efficiently. To run preprocessor, type below.
+```
+hadoop jar dist/kogiri-all.jar preprocess -k <mer_size> -o <preprocess output dir> <input fasta file dir or files>
+```
+
+All vs. All Read Frequency Count
+--------------------------------
+To count read frequency in all vs. all way, type below.
+```
+hadoop jar dist/kogiri-all.jar readfrequencycount --histogram <preprocess histogram dir> --statistics <preprocess statistics dir> --stddev_factor 2 -o <output dir> <preprocess kmer index dir or files>
+```
 
 License
 -------
