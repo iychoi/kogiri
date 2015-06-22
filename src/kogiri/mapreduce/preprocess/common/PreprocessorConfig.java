@@ -43,7 +43,7 @@ public class PreprocessorConfig {
     public static final String DEFAULT_KMER_INDEX_PATH = "kmerindex";
     public static final String DEFAULT_KMER_STATISITCS_PATH = "statistics";
     
-    private static final String HADOOP_CONFIG_KEY = "kogiri.mapreduce.common.preprocessorconfig";
+    private static final String HADOOP_CONFIG_KEY = "kogiri.mapreduce.preprocess.common.preprocessorconfig";
     
     private ClusterConfiguration clusterConfiguration = new ClusterConfiguration();
     private String reportFilePath;

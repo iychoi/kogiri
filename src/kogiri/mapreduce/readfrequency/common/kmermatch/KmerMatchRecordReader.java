@@ -18,9 +18,13 @@
 package kogiri.mapreduce.readfrequency.common.kmermatch;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import kogiri.common.hadoop.io.datatypes.CompressedSequenceWritable;
 import kogiri.mapreduce.preprocess.common.kmerhistogram.KmerRangePartition;
 import kogiri.mapreduce.preprocess.common.kmerindex.AKmerIndexRecordFilter;
+import kogiri.mapreduce.preprocess.common.kmerindex.STDKmerIndexRecordFilter;
+import kogiri.mapreduce.preprocess.common.kmerstatistics.KmerStandardDeviation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -38,7 +42,7 @@ public class KmerMatchRecordReader extends RecordReader<CompressedSequenceWritab
     private static final Log LOG = LogFactory.getLog(KmerMatchRecordReader.class);
     
     private Path[] inputIndexPath;
-    private KmerJoiner matcher;
+    private KmerJoiner joiner;
     private Configuration conf;
     private KmerMatchResult curResult;
 
@@ -56,24 +60,59 @@ public class KmerMatchRecordReader extends RecordReader<CompressedSequenceWritab
         
         KmerMatchInputFormatConfig inputFormatConfig = KmerMatchInputFormatConfig.createInstance(this.conf);
         Class kmerIndexRecordFilterClazz = inputFormatConfig.getKmerIndexRecordFilterClass();
-        AKmerIndexRecordFilter kmerIndexRecordFilter = null;
+        AKmerIndexRecordFilter[] kmerIndexRecordFilter = null;
         if(kmerIndexRecordFilterClazz != null) {
-            try {
-                kmerIndexRecordFilter = (AKmerIndexRecordFilter) kmerIndexRecordFilterClazz.newInstance();
-            } catch (InstantiationException ex) {
-                LOG.error(ex);
-            } catch (IllegalAccessException ex) {
-                LOG.error(ex);
+            if(kmerIndexRecordFilterClazz == STDKmerIndexRecordFilter.class) {
+                KmerStandardDeviation stddev[] = inputFormatConfig.getStandardDeviation();
+                kmerIndexRecordFilter = new AKmerIndexRecordFilter[stddev.length];
+                
+                for(int i=0;i<stddev.length;i++) {
+                    try {
+                        Constructor ctor = kmerIndexRecordFilterClazz.getConstructor(KmerStandardDeviation.class);
+                        kmerIndexRecordFilter[i] = (AKmerIndexRecordFilter) ctor.newInstance(new Object[] {stddev[i]} );
+                    } catch (InstantiationException ex) {
+                        LOG.error(ex);
+                    } catch (IllegalAccessException ex) {
+                        LOG.error(ex);
+                    } catch (IllegalArgumentException ex) {
+                        LOG.error(ex);
+                    } catch (InvocationTargetException ex) {
+                        LOG.error(ex);
+                    } catch (NoSuchMethodException ex) {
+                        LOG.error(ex);
+                    } catch (SecurityException ex) {
+                        LOG.error(ex);
+                    }
+                }
+            } else {
+                kmerIndexRecordFilter = new AKmerIndexRecordFilter[1];
+            
+                try {
+                    Constructor ctor = kmerIndexRecordFilterClazz.getConstructor(Configuration.class);
+                    kmerIndexRecordFilter[0] = (AKmerIndexRecordFilter) ctor.newInstance(new Object[] {this.conf} );
+                } catch (InstantiationException ex) {
+                    LOG.error(ex);
+                } catch (IllegalAccessException ex) {
+                    LOG.error(ex);
+                } catch (IllegalArgumentException ex) {
+                    LOG.error(ex);
+                } catch (InvocationTargetException ex) {
+                    LOG.error(ex);
+                } catch (NoSuchMethodException ex) {
+                    LOG.error(ex);
+                } catch (SecurityException ex) {
+                    LOG.error(ex);
+                }
             }
         }
         
-        this.matcher = new KmerJoiner(this.inputIndexPath, partition, kmerIndexRecordFilter, context);
+        this.joiner = new KmerJoiner(this.inputIndexPath, partition, kmerIndexRecordFilter, context);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public boolean nextKeyValue() throws IOException, InterruptedException {
-        this.curResult = this.matcher.stepNext();
+        this.curResult = this.joiner.stepNext();
         if(this.curResult != null) {
             return true;
         }
@@ -95,11 +134,11 @@ public class KmerMatchRecordReader extends RecordReader<CompressedSequenceWritab
 
     @Override
     public float getProgress() throws IOException {
-        return this.matcher.getProgress();
+        return this.joiner.getProgress();
     }
 
     @Override
     public synchronized void close() throws IOException {
-        this.matcher.close();
+        this.joiner.close();
     }
 }

@@ -36,7 +36,7 @@ public class KmerStatistics {
     
     private static final Log LOG = LogFactory.getLog(KmerStatistics.class);
     
-    private static final String HADOOP_CONFIG_KEY = "kogiri.mapreduce.common.kmerstatistics";
+    private static final String HADOOP_CONFIG_KEY = "kogiri.mapreduce.preprocess.common.kmerstatistics.kmerstatistics";
     
     private String sampleName;
     private int kmerSize;

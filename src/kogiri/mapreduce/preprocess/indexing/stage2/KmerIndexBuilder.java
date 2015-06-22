@@ -214,8 +214,6 @@ public class KmerIndexBuilder extends Configured implements Tool, IPreprocessorS
                 if(MapReduceHelper.isLogFiles(entryPath)) {
                     fs.delete(entryPath, true);
                 } else if(MapReduceHelper.isPartialOutputFiles(entryPath)) {
-                    fs.delete(entryPath, true);
-                } else {
                     // rename outputs
                     int mapreduceID = MapReduceHelper.getMapReduceID(entryPath);
                     Path toPath = new Path(finalOutputPath, KmerIndexHelper.makeKmerIndexPartFileName(roundInputPath.getName(), kmerSize, mapreduceID));

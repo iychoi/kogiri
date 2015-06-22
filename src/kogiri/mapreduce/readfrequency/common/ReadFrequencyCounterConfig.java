@@ -40,7 +40,7 @@ public class ReadFrequencyCounterConfig {
     public static final String DEFAULT_KMER_MATCH_PATH = "match";
     public static final String DEFAULT_READ_FREQUENCY_PATH = "readfrequency";
     
-    private static final String HADOOP_CONFIG_KEY = "kogiri.mapreduce.common.readfrequencycounterconfig";
+    private static final String HADOOP_CONFIG_KEY = "kogiri.mapreduce.readfrequency.common.readfrequencycounterconfig";
     
     private ClusterConfiguration clusterConfiguration = new ClusterConfiguration();
     private String reportFilePath;

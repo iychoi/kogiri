@@ -38,7 +38,7 @@ public class KmerMatchResult {
     
     private static final Log LOG = LogFactory.getLog(KmerMatchResult.class);
     
-    private static final String HADOOP_CONFIG_KEY = "kogiri.mapreduce.common.kmermatchresult";
+    private static final String HADOOP_CONFIG_KEY = "kogiri.mapreduce.readfrequency.common.kmermatch.kmermatchresult";
     
     private CompressedSequenceWritable key;
     private CompressedIntArrayWritable[] vals;

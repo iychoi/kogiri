@@ -17,10 +17,13 @@
  */
 package kogiri.mapreduce.preprocess.common.kmerindex;
 
+import java.io.IOException;
 import kogiri.common.hadoop.io.datatypes.CompressedIntArrayWritable;
 import kogiri.common.hadoop.io.datatypes.CompressedSequenceWritable;
+import kogiri.mapreduce.preprocess.common.kmerstatistics.KmerStandardDeviation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 
 /**
  *
@@ -29,22 +32,22 @@ import org.apache.commons.logging.LogFactory;
 public class STDKmerIndexRecordFilter extends AKmerIndexRecordFilter {
     
     private static final Log LOG = LogFactory.getLog(STDKmerIndexRecordFilter.class);
-    
-    private final double avg;
-    private final double stddeviation;
-    private final double factor;
 
-    public STDKmerIndexRecordFilter(double avg, double stddeviation, double factor) {
-        this.avg = avg;
-        this.stddeviation = stddeviation;
-        this.factor = factor;
+    private KmerStandardDeviation stddev;
+    
+    public STDKmerIndexRecordFilter(Configuration conf) throws IOException {
+        this.stddev = KmerStandardDeviation.createInstance(conf);
+    }
+    
+    public STDKmerIndexRecordFilter(KmerStandardDeviation stddev) {
+        this.stddev = stddev;
     }
     
     @Override
     public CompressedIntArrayWritable accept(CompressedSequenceWritable key, CompressedIntArrayWritable value) {
-        double diffPositive = Math.abs(this.avg - value.getPositiveEntriesCount());
-        double diffNegative = Math.abs(this.avg - value.getNegativeEntriesCount());
-        double boundary = Math.ceil(Math.abs(this.stddeviation * this.factor));
+        double diffPositive = Math.abs(this.stddev.getAverage() - value.getPositiveEntriesCount());
+        double diffNegative = Math.abs(this.stddev.getAverage() - value.getNegativeEntriesCount());
+        double boundary = Math.ceil(Math.abs(this.stddev.getStdDeviation() * this.stddev.getFactor()));
             
         if(diffPositive <= boundary && diffNegative <= boundary) {
             return new CompressedIntArrayWritable(value);

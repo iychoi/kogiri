@@ -15,32 +15,20 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package kogiri.mapreduce.common.helpers;
+package kogiri.mapreduce.readfrequency.common.kmermatch;
 
-import java.io.IOException;
-import kogiri.Kogiri;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.mapred.ClusterStatus;
-import org.apache.hadoop.mapred.JobClient;
+import kogiri.mapreduce.readfrequency.common.helpers.KmerMatchHelper;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 
 /**
  *
  * @author iychoi
  */
-public class MapReduceClusterHelper {
-    
-    private static final Log LOG = LogFactory.getLog(Kogiri.class);
-    
-    public static int getNodeNum(Configuration conf) {
-        try {
-            JobClient client = new JobClient(conf);
-            ClusterStatus clusterStatus = client.getClusterStatus();
-            return clusterStatus.getTaskTrackers();
-        } catch (IOException ex) {
-            LOG.error(ex);
-            return -1;
-        }
+public class KmerMatchResultPathFilter implements PathFilter {
+
+    @Override
+    public boolean accept(Path path) {
+        return KmerMatchHelper.isKmerMatchResultFile(path);
     }
 }

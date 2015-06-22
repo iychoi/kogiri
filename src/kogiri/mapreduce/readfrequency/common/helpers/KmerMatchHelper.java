@@ -25,7 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import kogiri.common.helpers.FileSystemHelper;
 import kogiri.mapreduce.readfrequency.common.ReadFrequencyCounterConstants;
-import kogiri.mapreduce.readfrequency.kmermatch.KmerMatchResultPathFilter;
+import kogiri.mapreduce.readfrequency.common.kmermatch.KmerMatchResultPathFilter;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;

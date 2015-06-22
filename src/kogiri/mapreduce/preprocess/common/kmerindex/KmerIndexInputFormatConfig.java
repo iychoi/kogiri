@@ -32,7 +32,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
  */
 public class KmerIndexInputFormatConfig {
     
-    private static final String HADOOP_CONFIG_KEY = "kogiri.mapreduce.common.kmerindexinputformatconfig";
+    private static final String HADOOP_CONFIG_KEY = "kogiri.mapreduce.preprocess.common.kmerindex.kmerindexinputformatconfig";
     
     private int kmerSize;
     private String kmerIndexIndexPath;

@@ -47,7 +47,7 @@ public class KmerJoiner {
     
     private Path[] kmerIndexPath;
     private KmerRangePartition partition;
-    private AKmerIndexRecordFilter recordFilter;
+    private AKmerIndexRecordFilter[] recordFilter;
     private Configuration conf;
     
     private AKmerIndexReader[] readers;
@@ -61,15 +61,15 @@ public class KmerJoiner {
     private List<Integer> stepMinKeys;
     private boolean stepStarted;
     
-    public KmerJoiner(Path[] kmerIndexPath, KmerRangePartition partition, AKmerIndexRecordFilter filter, TaskAttemptContext context) throws IOException {
+    public KmerJoiner(Path[] kmerIndexPath, KmerRangePartition partition, AKmerIndexRecordFilter[] filter, TaskAttemptContext context) throws IOException {
         initialize(kmerIndexPath, partition, filter, context.getConfiguration());
     }
     
-    public KmerJoiner(Path[] kmerIndexPath, KmerRangePartition partition, AKmerIndexRecordFilter filter, Configuration conf) throws IOException {
+    public KmerJoiner(Path[] kmerIndexPath, KmerRangePartition partition, AKmerIndexRecordFilter[] filter, Configuration conf) throws IOException {
         initialize(kmerIndexPath, partition, filter, conf);
     }
     
-    private void initialize(Path[] kmerIndexPath, KmerRangePartition partition, AKmerIndexRecordFilter filter, Configuration conf) throws IOException {
+    private void initialize(Path[] kmerIndexPath, KmerRangePartition partition, AKmerIndexRecordFilter[] filter, Configuration conf) throws IOException {
         this.kmerIndexPath = kmerIndexPath;
         this.partition = partition;
         this.recordFilter = filter;
@@ -83,7 +83,11 @@ public class KmerJoiner {
             if(this.recordFilter == null) {
                 this.readers[i] = new KmerIndexReader(fs, this.kmerIndexPath[i], this.partition.getPartitionBeginKmer(), this.partition.getPartitionEndKmer(), this.conf);
             } else {
-                this.readers[i] = new FilteredKmerIndexReader(fs, this.kmerIndexPath[i], this.partition.getPartitionBeginKmer(), this.partition.getPartitionEndKmer(), this.recordFilter, this.conf);
+                if(this.recordFilter.length != this.readers.length) {
+                    this.readers[i] = new FilteredKmerIndexReader(fs, this.kmerIndexPath[i], this.partition.getPartitionBeginKmer(), this.partition.getPartitionEndKmer(), this.recordFilter[0], this.conf);
+                } else {
+                    this.readers[i] = new FilteredKmerIndexReader(fs, this.kmerIndexPath[i], this.partition.getPartitionBeginKmer(), this.partition.getPartitionEndKmer(), this.recordFilter[i], this.conf);
+                }
             }
         }
         

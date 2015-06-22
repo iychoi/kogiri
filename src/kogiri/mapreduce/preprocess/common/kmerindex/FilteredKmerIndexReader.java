@@ -70,6 +70,10 @@ public class FilteredKmerIndexReader extends AKmerIndexReader {
                 key.set(tempKey);
                 val.set(newVal);
                 return true;
+            } else {
+                key.set(tempKey);
+                val.set(tempVal);
+                return true;
             }
         }
         return false;

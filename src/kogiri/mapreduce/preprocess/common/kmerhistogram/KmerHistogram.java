@@ -42,7 +42,7 @@ public class KmerHistogram {
     
     private static final Log LOG = LogFactory.getLog(KmerHistogram.class);
     
-    private static final String HADOOP_CONFIG_KEY = "kogiri.mapreduce.common.kmerhistogram";
+    private static final String HADOOP_CONFIG_KEY = "kogiri.mapreduce.preprocess.common.kmerhistogram.kmerhistogram";
     
     private static final int SAMPLING_CHARS = 6;
     

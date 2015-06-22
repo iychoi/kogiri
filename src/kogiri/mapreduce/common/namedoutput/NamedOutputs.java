@@ -17,8 +17,6 @@
  */
 package kogiri.mapreduce.common.namedoutput;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,7 +31,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.Text;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -45,7 +42,7 @@ public class NamedOutputs {
     
     private static final Log LOG = LogFactory.getLog(NamedOutputs.class);
     
-    private static final String HADOOP_CONFIG_KEY = "kogiri.mapreduce.common.namedoutputs";
+    private static final String HADOOP_CONFIG_KEY = "kogiri.mapreduce.common.namedoutput.namedoutputs";
     
     private Hashtable<String, Integer> identifierCache = new Hashtable<String, Integer>();
     private Hashtable<String, Integer> filenameCache = new Hashtable<String, Integer>();

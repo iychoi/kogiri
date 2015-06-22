@@ -40,7 +40,7 @@ public class KmerIndexIndex {
     
     private static final Log LOG = LogFactory.getLog(KmerIndexIndex.class);
     
-    private static final String HADOOP_CONFIG_KEY = "kogiri.mapreduce.common.kmerindex.kmerindexindex";
+    private static final String HADOOP_CONFIG_KEY = "kogiri.mapreduce.preprocess.common.kmerindex.kmerindexindex";
     
     private List<String> lastKeyList = new ArrayList<String>();
     

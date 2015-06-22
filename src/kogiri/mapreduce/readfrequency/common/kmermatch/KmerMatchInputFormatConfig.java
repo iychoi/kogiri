@@ -20,6 +20,7 @@ package kogiri.mapreduce.readfrequency.common.kmermatch;
 import java.io.File;
 import java.io.IOException;
 import kogiri.common.json.JsonSerializer;
+import kogiri.mapreduce.preprocess.common.kmerstatistics.KmerStandardDeviation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -36,12 +37,13 @@ public class KmerMatchInputFormatConfig {
     
     private static final Log LOG = LogFactory.getLog(KmerMatchInputFormatConfig.class);
     
-    private static final String HADOOP_CONFIG_KEY = "kogiri.mapreduce.common.kmermatchinputformatconfig";
+    private static final String HADOOP_CONFIG_KEY = "kogiri.mapreduce.readfrequency.common.kmermatch.kmermatchinputformatconfig";
     
     private int kmerSize;
     private int partitions;
     private String kmerHistogramPath;
     private Class kmerIndexRecordFilterClass;
+    private KmerStandardDeviation[] stddev;
     
     public static KmerMatchInputFormatConfig createInstance(File file) throws IOException {
         JsonSerializer serializer = new JsonSerializer();
@@ -111,13 +113,23 @@ public class KmerMatchInputFormatConfig {
     }
     
     @JsonProperty("kmer_index_record_filter_class")
-    public String ggetKmerIndexRecordFilterClassString() {
+    public String getKmerIndexRecordFilterClassString() {
         return this.kmerIndexRecordFilterClass.getCanonicalName();
     }
     
     @JsonIgnore
     public Class getKmerIndexRecordFilterClass() {
         return this.kmerIndexRecordFilterClass;
+    }
+    
+    @JsonProperty("standard_deviation")
+    public void setStandardDeviation(KmerStandardDeviation[] stddev) {
+        this.stddev = stddev;
+    }
+    
+    @JsonProperty("standard_deviation")
+    public KmerStandardDeviation[] getStandardDeviation() {
+        return this.stddev;
     }
     
     @JsonIgnore
