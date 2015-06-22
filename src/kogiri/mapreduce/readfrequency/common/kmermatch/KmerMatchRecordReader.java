@@ -18,16 +18,18 @@
 package kogiri.mapreduce.readfrequency.common.kmermatch;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import kogiri.common.hadoop.io.datatypes.CompressedSequenceWritable;
+import kogiri.mapreduce.preprocess.common.helpers.KmerIndexHelper;
+import kogiri.mapreduce.preprocess.common.helpers.KmerStatisticsHelper;
 import kogiri.mapreduce.preprocess.common.kmerhistogram.KmerRangePartition;
 import kogiri.mapreduce.preprocess.common.kmerindex.AKmerIndexRecordFilter;
 import kogiri.mapreduce.preprocess.common.kmerindex.STDKmerIndexRecordFilter;
 import kogiri.mapreduce.preprocess.common.kmerstatistics.KmerStandardDeviation;
+import kogiri.mapreduce.preprocess.common.kmerstatistics.KmerStatistics;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
@@ -59,51 +61,20 @@ public class KmerMatchRecordReader extends RecordReader<CompressedSequenceWritab
         KmerRangePartition partition = kmerIndexSplit.getPartition();
         
         KmerMatchInputFormatConfig inputFormatConfig = KmerMatchInputFormatConfig.createInstance(this.conf);
-        Class kmerIndexRecordFilterClazz = inputFormatConfig.getKmerIndexRecordFilterClass();
-        AKmerIndexRecordFilter[] kmerIndexRecordFilter = null;
-        if(kmerIndexRecordFilterClazz != null) {
-            if(kmerIndexRecordFilterClazz == STDKmerIndexRecordFilter.class) {
-                KmerStandardDeviation stddev[] = inputFormatConfig.getStandardDeviation();
-                kmerIndexRecordFilter = new AKmerIndexRecordFilter[stddev.length];
-                
-                for(int i=0;i<stddev.length;i++) {
-                    try {
-                        Constructor ctor = kmerIndexRecordFilterClazz.getConstructor(KmerStandardDeviation.class);
-                        kmerIndexRecordFilter[i] = (AKmerIndexRecordFilter) ctor.newInstance(new Object[] {stddev[i]} );
-                    } catch (InstantiationException ex) {
-                        LOG.error(ex);
-                    } catch (IllegalAccessException ex) {
-                        LOG.error(ex);
-                    } catch (IllegalArgumentException ex) {
-                        LOG.error(ex);
-                    } catch (InvocationTargetException ex) {
-                        LOG.error(ex);
-                    } catch (NoSuchMethodException ex) {
-                        LOG.error(ex);
-                    } catch (SecurityException ex) {
-                        LOG.error(ex);
-                    }
-                }
-            } else {
-                kmerIndexRecordFilter = new AKmerIndexRecordFilter[1];
+        AKmerIndexRecordFilter[] kmerIndexRecordFilter = new AKmerIndexRecordFilter[this.inputIndexPath.length];
+        
+        for(int i=0;i<this.inputIndexPath.length;i++) {
+            String fastaFilename = KmerIndexHelper.getFastaFileName(this.inputIndexPath[i].getName());
+            Path statisticsFile = new Path(inputFormatConfig.getKmerStatisticsPath(), KmerStatisticsHelper.makeKmerStatisticsFileName(fastaFilename));
+            FileSystem fs = statisticsFile.getFileSystem(this.conf);
+            KmerStatistics statistics = KmerStatistics.createInstance(fs, statisticsFile);
             
-                try {
-                    Constructor ctor = kmerIndexRecordFilterClazz.getConstructor(Configuration.class);
-                    kmerIndexRecordFilter[0] = (AKmerIndexRecordFilter) ctor.newInstance(new Object[] {this.conf} );
-                } catch (InstantiationException ex) {
-                    LOG.error(ex);
-                } catch (IllegalAccessException ex) {
-                    LOG.error(ex);
-                } catch (IllegalArgumentException ex) {
-                    LOG.error(ex);
-                } catch (InvocationTargetException ex) {
-                    LOG.error(ex);
-                } catch (NoSuchMethodException ex) {
-                    LOG.error(ex);
-                } catch (SecurityException ex) {
-                    LOG.error(ex);
-                }
-            }
+            KmerStandardDeviation stddev = new KmerStandardDeviation();
+            stddev.setAverage(statistics.getAverageFrequency());
+            stddev.setStdDeviation(statistics.getStdDeviation());
+            stddev.setFactor(inputFormatConfig.getStandardDeviationFactor());
+            
+            kmerIndexRecordFilter[i] = new STDKmerIndexRecordFilter(stddev);
         }
         
         this.joiner = new KmerJoiner(this.inputIndexPath, partition, kmerIndexRecordFilter, context);

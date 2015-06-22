@@ -20,7 +20,6 @@ package kogiri.mapreduce.readfrequency.common.kmermatch;
 import java.io.File;
 import java.io.IOException;
 import kogiri.common.json.JsonSerializer;
-import kogiri.mapreduce.preprocess.common.kmerstatistics.KmerStandardDeviation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -42,8 +41,8 @@ public class KmerMatchInputFormatConfig {
     private int kmerSize;
     private int partitions;
     private String kmerHistogramPath;
-    private Class kmerIndexRecordFilterClass;
-    private KmerStandardDeviation[] stddev;
+    private String kmerStatisticsPath;
+    private double stddev_factor;
     
     public static KmerMatchInputFormatConfig createInstance(File file) throws IOException {
         JsonSerializer serializer = new JsonSerializer();
@@ -98,38 +97,24 @@ public class KmerMatchInputFormatConfig {
         return this.partitions;
     }
     
-    @JsonProperty("kmer_index_record_filter_class")
-    public void setKmerIndexRecordFilterClass(String className) {
-        try {
-            this.kmerIndexRecordFilterClass = Class.forName(className);
-        } catch (ClassNotFoundException ex) {
-            LOG.error(ex);
-        }
+    @JsonProperty("kmer_statistics_path")
+    public void setKmerStatisticsPath(String statisticsPath) {
+        this.kmerStatisticsPath = statisticsPath;
     }
     
-    @JsonIgnore
-    public void setKmerIndexRecordFilterClass(Class clazz) {
-        this.kmerIndexRecordFilterClass = clazz;
+    @JsonProperty("kmer_statistics_path")
+    public String getKmerStatisticsPath() {
+        return this.kmerStatisticsPath;
     }
     
-    @JsonProperty("kmer_index_record_filter_class")
-    public String getKmerIndexRecordFilterClassString() {
-        return this.kmerIndexRecordFilterClass.getCanonicalName();
+    @JsonProperty("standard_deviation_factor")
+    public void setStandardDeviationFactor(double standardDeviationFactor) {
+        this.stddev_factor = standardDeviationFactor;
     }
     
-    @JsonIgnore
-    public Class getKmerIndexRecordFilterClass() {
-        return this.kmerIndexRecordFilterClass;
-    }
-    
-    @JsonProperty("standard_deviation")
-    public void setStandardDeviation(KmerStandardDeviation[] stddev) {
-        this.stddev = stddev;
-    }
-    
-    @JsonProperty("standard_deviation")
-    public KmerStandardDeviation[] getStandardDeviation() {
-        return this.stddev;
+    @JsonProperty("standard_deviation_factor")
+    public double getStandardDeviationFactor() {
+        return this.stddev_factor;
     }
     
     @JsonIgnore

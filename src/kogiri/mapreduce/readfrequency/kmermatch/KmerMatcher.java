@@ -175,24 +175,8 @@ public class KmerMatcher extends Configured implements Tool, IReadFrequencyCount
         matchInputFormatConfig.setKmerSize(kmerSize);
         matchInputFormatConfig.setPartitionNum(MRNodes * PARTITIONS_PER_CORE);
         matchInputFormatConfig.setKmerHistogramPath(rfConfig.getKmerHistogramPath());
-        matchInputFormatConfig.setKmerIndexRecordFilterClass(STDKmerIndexRecordFilter.class);
-        
-        KmerStandardDeviation stddevArr[] = new KmerStandardDeviation[kmerIndexFiles.length];
-        for(int i=0;i<kmerIndexFiles.length;i++) {
-            String fastaFilename = KmerIndexHelper.getFastaFileName(kmerIndexFiles[i].getName());
-            Path statisticsFile = new Path(rfConfig.getKmerStatisticsPath(), KmerStatisticsHelper.makeKmerStatisticsFileName(fastaFilename));
-            FileSystem fs = statisticsFile.getFileSystem(conf);
-            KmerStatistics statistics = KmerStatistics.createInstance(fs, statisticsFile);
-            
-            KmerStandardDeviation stddev = new KmerStandardDeviation();
-            stddev.setAverage(statistics.getAverageFrequency());
-            stddev.setStdDeviation(statistics.getStdDeviation());
-            stddev.setFactor(2);
-            
-            stddevArr[i] = stddev;
-        }
-        
-        matchInputFormatConfig.setStandardDeviation(stddevArr);
+        matchInputFormatConfig.setKmerStatisticsPath(rfConfig.getKmerStatisticsPath());
+        matchInputFormatConfig.setStandardDeviationFactor(rfConfig.getStandardDeviationFactor());
         
         KmerMatchInputFormat.setInputFormatConfig(job, matchInputFormatConfig);
         

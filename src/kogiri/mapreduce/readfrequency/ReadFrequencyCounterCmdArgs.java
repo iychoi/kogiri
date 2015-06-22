@@ -34,6 +34,13 @@ public class ReadFrequencyCounterCmdArgs extends CommandArgumentsBase {
         
     }
     
+    @Option(name = "--stddev_factor", usage = "specify standard deviation factor")
+    protected double stddevFactor = ReadFrequencyCounterConfig.DEFAULT_STANDARD_DEVIATION_FACTOR;
+    
+    public double getStandardDeviationFactor() {
+        return this.stddevFactor;
+    }
+    
     @Option(name = "--histogram", usage = "specify kmer histogram path")
     protected String kmerHistogramPath;
 
@@ -118,6 +125,7 @@ public class ReadFrequencyCounterCmdArgs extends CommandArgumentsBase {
         config.addKmerIndexPath(this.inputPaths);
         config.setKmerHistogramPath(this.kmerHistogramPath);
         config.setKmerStatisticsPath(this.kmerStatisticsPath);
+        config.setStandardDeviationFactor(this.stddevFactor);
         config.setOutputRootPath(this.outputPath);
         return config;
     }

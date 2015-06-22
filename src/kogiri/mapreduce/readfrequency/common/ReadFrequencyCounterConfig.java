@@ -39,6 +39,7 @@ public class ReadFrequencyCounterConfig {
     public static final String DEFAULT_OUTPUT_ROOT_PATH = "./kogiri_readfrequency_output";
     public static final String DEFAULT_KMER_MATCH_PATH = "match";
     public static final String DEFAULT_READ_FREQUENCY_PATH = "readfrequency";
+    public static final double DEFAULT_STANDARD_DEVIATION_FACTOR = 2.0;
     
     private static final String HADOOP_CONFIG_KEY = "kogiri.mapreduce.readfrequency.common.readfrequencycounterconfig";
     
@@ -50,6 +51,7 @@ public class ReadFrequencyCounterConfig {
     private String kmerStatisticsPath;
     private String kmerMatchPath = DEFAULT_OUTPUT_ROOT_PATH + "/" + DEFAULT_KMER_MATCH_PATH;
     private String readFrequencyPath = DEFAULT_OUTPUT_ROOT_PATH + "/" + DEFAULT_READ_FREQUENCY_PATH;
+    private double stddev_factor = DEFAULT_STANDARD_DEVIATION_FACTOR;
     
     public static ReadFrequencyCounterConfig createInstance(File file) throws IOException {
         JsonSerializer serializer = new JsonSerializer();
@@ -114,6 +116,16 @@ public class ReadFrequencyCounterConfig {
     @JsonProperty("statistics_path")
     public void setKmerStatisticsPath(String kmerStatisticsPath) {
         this.kmerStatisticsPath = kmerStatisticsPath;
+    }
+    
+    @JsonProperty("standard_deviation_factor")
+    public void setStandardDeviationFactor(double factor) {
+        this.stddev_factor = factor;
+    }
+    
+    @JsonProperty("standard_deviation_factor")
+    public double getStandardDeviationFactor() {
+        return this.stddev_factor;
     }
     
     @JsonProperty("match_path")
