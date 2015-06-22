@@ -24,7 +24,10 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import kogiri.common.hadoop.io.datatypes.CompressedIntArrayWritable;
 import kogiri.common.hadoop.io.datatypes.CompressedSequenceWritable;
+import kogiri.common.json.JsonSerializer;
 import kogiri.mapreduce.preprocess.common.helpers.KmerIndexHelper;
+import kogiri.mapreduce.readfrequency.common.kmermatch.KmerMatchOutputRecord;
+import kogiri.mapreduce.readfrequency.common.kmermatch.KmerMatchOutputRecordField;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
@@ -40,9 +43,11 @@ public class KmerMatcherMapper extends Mapper<CompressedSequenceWritable, KmerMa
     
     private static final Log LOG = LogFactory.getLog(KmerMatcherMapper.class);
     
-    KmerMatcherFileMapping fileMapping;
-    Hashtable<String, Integer> idCacheTable;
+    private KmerMatcherFileMapping fileMapping;
+    private Hashtable<String, Integer> idCacheTable;
     private Counter reportCounter;
+    private JsonSerializer serializer;
+    
     
     @Override
     protected void setup(Context context) throws IOException, InterruptedException {
@@ -51,6 +56,8 @@ public class KmerMatcherMapper extends Mapper<CompressedSequenceWritable, KmerMa
         this.idCacheTable = new Hashtable<String, Integer>();
         
         this.reportCounter = context.getCounter("KmerMatcher", "report");
+        
+        this.serializer = new JsonSerializer();
     }
     
     @Override
@@ -95,25 +102,21 @@ public class KmerMatcherMapper extends Mapper<CompressedSequenceWritable, KmerMa
             fileid_arr[i] = fileidInt;
         }
         
-        StringBuilder sb = new StringBuilder();
+        KmerMatchOutputRecord outputRecord = new KmerMatchOutputRecord();
+        
         for(int i=0;i<fileid_arr.length;i++) {
-            if(sb.length() != 0) {
-                sb.append("\t");
-            }
+            KmerMatchOutputRecordField field = new KmerMatchOutputRecordField();
+            field.setFileID(fileid_arr[i]);
+            field.addReadIDs(filteredValueArray.get(i).get());
             
-            sb.append(fileid_arr[i] + ":");
-            int[] valReadIDs = filteredValueArray.get(i).get();
-            int valReadIDsSize = valReadIDs.length;
-            for(int j=0;j<valReadIDsSize;j++) {
-                sb.append(valReadIDs[j]);
-                if(j < valReadIDsSize - 1) {
-                    sb.append(",");
-                }
-            }
-            this.reportCounter.increment(1);
+            outputRecord.addField(field);
         }
         
-        context.write(new Text(key.getSequence()), new Text(sb.toString()));
+        this.reportCounter.increment(1);
+        
+        String json = this.serializer.toJson(outputRecord);
+        
+        context.write(new Text(key.getSequence()), new Text(json));
     }
     
     @Override
@@ -121,5 +124,6 @@ public class KmerMatcherMapper extends Mapper<CompressedSequenceWritable, KmerMa
         this.fileMapping = null;
         this.idCacheTable.clear();
         this.idCacheTable = null;
+        this.serializer = null;
     }
 }

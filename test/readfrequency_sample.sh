@@ -33,6 +33,6 @@ fi
 if [ $? == 0 ]
 then
     echo "run kogiri..."
-    hadoop jar $allinone_dist_jar readfrequencycount $@ --histogram $histogram_path --statistics $statistics_path -o $output_path $input_path
+    hadoop jar $allinone_dist_jar readfrequencycount $@ --histogram $histogram_path --statistics $statistics_path --stddev_factor 2 -o $output_path $input_path
 fi
 

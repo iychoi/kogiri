@@ -21,6 +21,7 @@ import java.io.File;
 import kogiri.mapreduce.common.cmdargs.CommandArgumentsParser;
 import kogiri.mapreduce.readfrequency.common.ReadFrequencyCounterConfig;
 import kogiri.mapreduce.readfrequency.kmermatch.KmerMatcher;
+import kogiri.mapreduce.readfrequency.modecount.ModeCounter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -101,13 +102,11 @@ public class ReadFrequencyCounter {
             res = stage1.run(rfConfig);
         }
         
-        /*
         if((runStages & RUN_STAGE_2) == RUN_STAGE_2 &&
                 res == 0) {
-            KmerIndexBuilder stage2 = new KmerIndexBuilder();
+            ModeCounter stage2 = new ModeCounter();
             res = stage2.run(rfConfig);
         }
-        */
 
         System.exit(res);
     }

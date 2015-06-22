@@ -28,10 +28,6 @@ import kogiri.mapreduce.common.cmdargs.CommandArgumentsParser;
 import kogiri.mapreduce.common.helpers.MapReduceClusterHelper;
 import kogiri.mapreduce.common.helpers.MapReduceHelper;
 import kogiri.mapreduce.preprocess.common.helpers.KmerIndexHelper;
-import kogiri.mapreduce.preprocess.common.helpers.KmerStatisticsHelper;
-import kogiri.mapreduce.preprocess.common.kmerindex.STDKmerIndexRecordFilter;
-import kogiri.mapreduce.preprocess.common.kmerstatistics.KmerStandardDeviation;
-import kogiri.mapreduce.preprocess.common.kmerstatistics.KmerStatistics;
 import kogiri.mapreduce.readfrequency.ReadFrequencyCounterCmdArgs;
 import kogiri.mapreduce.readfrequency.common.IReadFrequencyCounterStage;
 import kogiri.mapreduce.readfrequency.common.ReadFrequencyCounterConfig;
@@ -193,9 +189,9 @@ public class KmerMatcher extends Configured implements Tool, IReadFrequencyCount
         if(result) {
             commit(new Path(rfConfig.getKmerMatchPath()), conf);
             
-            Path TOCfilePath = new Path(rfConfig.getKmerMatchPath(), KmerMatchHelper.makeKmerMatchTableFileName());
-            FileSystem fs = TOCfilePath.getFileSystem(conf);
-            fileMapping.saveTo(fs, TOCfilePath);
+            Path tableFilePath = new Path(rfConfig.getKmerMatchPath(), KmerMatchHelper.makeKmerMatchTableFileName());
+            FileSystem fs = tableFilePath.getFileSystem(conf);
+            fileMapping.saveTo(fs, tableFilePath);
         }
         
         // report
