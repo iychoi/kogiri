@@ -23,18 +23,16 @@ import java.util.ArrayList;
 import java.util.List;
 import kogiri.common.hadoop.io.datatypes.CompressedIntArrayWritable;
 import kogiri.common.hadoop.io.datatypes.CompressedSequenceWritable;
-import kogiri.common.hadoop.io.datatypes.MultiFileCompressedSequenceWritable;
 import kogiri.common.hadoop.io.format.fasta.FastaReadInputFormat;
 import kogiri.common.helpers.FileSystemHelper;
 import kogiri.common.report.Report;
 import kogiri.mapreduce.common.cmdargs.CommandArgumentsParser;
 import kogiri.mapreduce.common.helpers.MapReduceHelper;
-import kogiri.mapreduce.common.namedoutput.NamedOutputRecord;
-import kogiri.mapreduce.common.namedoutput.NamedOutputs;
 import kogiri.mapreduce.preprocess.PreprocessorCmdArgs;
-import kogiri.mapreduce.preprocess.common.IPreprocessStage;
+import kogiri.mapreduce.preprocess.common.IPreprocessorStage;
 import kogiri.mapreduce.preprocess.common.PreprocessorConfig;
 import kogiri.mapreduce.preprocess.common.PreprocessorConfigException;
+import kogiri.mapreduce.preprocess.common.helpers.KmerHistogramHelper;
 import kogiri.mapreduce.preprocess.common.kmerindex.KmerIndexIndex;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,7 +46,6 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.MapFileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
@@ -56,7 +53,7 @@ import org.apache.hadoop.util.ToolRunner;
  *
  * @author iychoi
  */
-public class KmerIndexBuilder extends Configured implements Tool, IPreprocessStage {
+public class KmerIndexBuilder extends Configured implements Tool, IPreprocessorStage {
     
     private static final Log LOG = LogFactory.getLog(KmerIndexBuilder.class);
     
@@ -111,7 +108,7 @@ public class KmerIndexBuilder extends Configured implements Tool, IPreprocessSta
         }
         
         if(ppConfig.getKmerIndexPath() == null) {
-            throw new PreprocessorConfigException("cannot find k-mer index path");
+            throw new PreprocessorConfigException("cannot find kmer index path");
         }
     }
     
@@ -126,7 +123,7 @@ public class KmerIndexBuilder extends Configured implements Tool, IPreprocessSta
         ppConfig.getClusterConfiguration().configureTo(conf);
         ppConfig.saveTo(conf);
         
-        Path[] inputFiles = FileSystemHelper.getAllFastaFilePaths(conf, ppConfig.getFastaPath());
+        Path[] inputFiles = FileSystemHelper.getAllFastaFilePath(conf, ppConfig.getFastaPath());
         
         boolean job_result = true;
         List<Job> jobs = new ArrayList<Job>();
@@ -141,7 +138,7 @@ public class KmerIndexBuilder extends Configured implements Tool, IPreprocessSta
             // Mapper
             job.setMapperClass(KmerIndexBuilderMapper.class);
             job.setInputFormatClass(FastaReadInputFormat.class);
-            job.setMapOutputKeyClass(MultiFileCompressedSequenceWritable.class);
+            job.setMapOutputKeyClass(CompressedSequenceWritable.class);
             job.setMapOutputValueClass(CompressedIntArrayWritable.class);
             
             // Combiner
@@ -163,17 +160,13 @@ public class KmerIndexBuilder extends Configured implements Tool, IPreprocessSta
             LOG.info("Input file : ");
             LOG.info("> " + roundInputFile.toString());
             
-            // Register named outputs
-            NamedOutputs namedOutputs = new NamedOutputs();
-            namedOutputs.add(roundInputFile);
-            namedOutputs.saveTo(job.getConfiguration());
+            String histogramFileName = KmerHistogramHelper.makeKmerHistogramFileName(roundInputFile.getName());
+            Path histogramPath = new Path(ppConfig.getKmerHistogramPath(), histogramFileName);
+            
+            KmerIndexBuilderPartitioner.setHistogramPath(job.getConfiguration(), histogramPath);
             
             FileOutputFormat.setOutputPath(job, new Path(roundOutputPath));
             job.setOutputFormatClass(MapFileOutputFormat.class);
-            
-            for(NamedOutputRecord namedOutput : namedOutputs.getRecord()) {
-                MultipleOutputs.addNamedOutput(job, namedOutput.getIdentifier(), MapFileOutputFormat.class, CompressedSequenceWritable.class, CompressedIntArrayWritable.class);
-            }
             
             // Execute job and return status
             boolean result = job.waitForCompletion(true);
@@ -182,7 +175,7 @@ public class KmerIndexBuilder extends Configured implements Tool, IPreprocessSta
 
             // commit results
             if (result) {
-                commitRoundIndexOutputFiles(new Path(roundOutputPath), new Path(ppConfig.getKmerIndexPath()), job.getConfiguration(), namedOutputs, ppConfig.getKmerSize());
+                commitRoundIndexOutputFiles(roundInputFile, new Path(roundOutputPath), new Path(ppConfig.getKmerIndexPath()), job.getConfiguration(), ppConfig.getKmerSize());
                 
                 // create index of index
                 createIndexOfIndex(new Path(ppConfig.getKmerIndexPath()), roundInputFile, job.getConfiguration(), ppConfig.getKmerSize());
@@ -205,7 +198,7 @@ public class KmerIndexBuilder extends Configured implements Tool, IPreprocessSta
         return job_result ? 0 : 1;
     }
     
-    private void commitRoundIndexOutputFiles(Path MROutputPath, Path finalOutputPath, Configuration conf, NamedOutputs namedOutputs, int kmerSize) throws IOException {
+    private void commitRoundIndexOutputFiles(Path roundInputPath, Path MROutputPath, Path finalOutputPath, Configuration conf, int kmerSize) throws IOException {
         FileSystem fs = MROutputPath.getFileSystem(conf);
         if(!fs.exists(finalOutputPath)) {
             fs.mkdirs(finalOutputPath);
@@ -224,15 +217,12 @@ public class KmerIndexBuilder extends Configured implements Tool, IPreprocessSta
                     fs.delete(entryPath, true);
                 } else {
                     // rename outputs
-                    NamedOutputRecord namedOutput = namedOutputs.getRecordFromMROutput(entryPath);
-                    if(namedOutput != null) {
-                        int mapreduceID = MapReduceHelper.getMapReduceID(entryPath);
-                        Path toPath = new Path(finalOutputPath, KmerIndexHelper.makeKmerIndexPartFileName(namedOutput.getFilename(), kmerSize, mapreduceID));
-                        
-                        LOG.info("output : " + entryPath.toString());
-                        LOG.info("renamed to : " + toPath.toString());
-                        fs.rename(entryPath, toPath);
-                    }
+                    int mapreduceID = MapReduceHelper.getMapReduceID(entryPath);
+                    Path toPath = new Path(finalOutputPath, KmerIndexHelper.makeKmerIndexPartFileName(roundInputPath.getName(), kmerSize, mapreduceID));
+
+                    LOG.info("output : " + entryPath.toString());
+                    LOG.info("renamed to : " + toPath.toString());
+                    fs.rename(entryPath, toPath);
                 }
             }
         } else {

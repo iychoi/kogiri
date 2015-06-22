@@ -21,8 +21,7 @@ import java.io.IOException;
 import kogiri.common.algorithms.KmerKeySelection.KmerRecord;
 import kogiri.common.fasta.FastaRead;
 import kogiri.common.hadoop.io.datatypes.CompressedIntArrayWritable;
-import kogiri.common.hadoop.io.datatypes.MultiFileCompressedSequenceWritable;
-import kogiri.mapreduce.common.namedoutput.NamedOutputs;
+import kogiri.common.hadoop.io.datatypes.CompressedSequenceWritable;
 import kogiri.mapreduce.preprocess.common.PreprocessorConfig;
 import kogiri.mapreduce.preprocess.common.helpers.ReadIndexHelper;
 import kogiri.mapreduce.preprocess.common.readindex.ReadIDNotFoundException;
@@ -40,31 +39,25 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit;
  *
  * @author iychoi
  */
-public class KmerIndexBuilderMapper extends Mapper<LongWritable, FastaRead, MultiFileCompressedSequenceWritable, CompressedIntArrayWritable> {
+public class KmerIndexBuilderMapper extends Mapper<LongWritable, FastaRead, CompressedSequenceWritable, CompressedIntArrayWritable> {
     
     private static final Log LOG = LogFactory.getLog(KmerIndexBuilderMapper.class);
     
     private PreprocessorConfig ppConfig;
     
-    private NamedOutputs namedOutputs;
     private int previousReadID;
     private ReadIndexReader readIndexReader;
-    private int namedOutputId;
     
     @Override
     protected void setup(Context context) throws IOException, InterruptedException {
         Configuration conf = context.getConfiguration();
         
         this.ppConfig = PreprocessorConfig.createInstance(conf);
-        this.namedOutputs = NamedOutputs.createInstance(conf);
         
         this.previousReadID = -1;
         
         FileSplit inputSplit = (FileSplit)context.getInputSplit();
         Path inputFilePath = inputSplit.getPath();
-        
-        this.namedOutputId = this.namedOutputs.getIDFromFilename(inputFilePath.getName());
-        
         
         Path readIndexPath = new Path(this.ppConfig.getReadIndexPath(), ReadIndexHelper.makeReadIndexFileName(inputFilePath.getName()));
         FileSystem fs = readIndexPath.getFileSystem(conf);
@@ -106,7 +99,7 @@ public class KmerIndexBuilderMapper extends Mapper<LongWritable, FastaRead, Mult
                 rid_arr[0] = readID;
             }
             
-            context.write(new MultiFileCompressedSequenceWritable(this.namedOutputId, keyRecord.getSequence()), new CompressedIntArrayWritable(rid_arr));
+            context.write(new CompressedSequenceWritable(keyRecord.getSequence()), new CompressedIntArrayWritable(rid_arr));
         }
     }
     

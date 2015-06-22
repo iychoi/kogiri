@@ -15,14 +15,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package kogiri.mapreduce.preprocess;
+package kogiri.mapreduce.readfrequency;
 
 import java.io.File;
 import kogiri.mapreduce.common.cmdargs.CommandArgumentsParser;
-import kogiri.mapreduce.preprocess.common.PreprocessorConfig;
-import kogiri.mapreduce.preprocess.indexing.stage1.ReadIndexBuilder;
-import kogiri.mapreduce.preprocess.indexing.stage2.KmerIndexBuilder;
-import kogiri.mapreduce.preprocess.indexing.stage3.KmerStatisticsBuilder;
+import kogiri.mapreduce.readfrequency.common.ReadFrequencyCounterConfig;
+import kogiri.mapreduce.readfrequency.kmermatch.KmerMatcher;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -30,12 +28,11 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author iychoi
  */
-public class Preprocessor {
-    private static final Log LOG = LogFactory.getLog(Preprocessor.class);
+public class ReadFrequencyCounter {
+    private static final Log LOG = LogFactory.getLog(ReadFrequencyCounter.class);
     
     private static int RUN_STAGE_1 = 0x01;
     private static int RUN_STAGE_2 = 0x02;
-    private static int RUN_STAGE_3 = 0x04;
     
     private static boolean isHelpParam(String[] args) {
         if(args.length < 1 || 
@@ -53,15 +50,12 @@ public class Preprocessor {
                 runStages |= RUN_STAGE_1;
             } else if(arg.equalsIgnoreCase("stage2")) {
                 runStages |= RUN_STAGE_2;
-            } else if(arg.equalsIgnoreCase("stage3")) {
-                runStages |= RUN_STAGE_3;
             }
         }
         
         if(runStages == 0) {
             runStages |= RUN_STAGE_1;
             runStages |= RUN_STAGE_2;
-            runStages |= RUN_STAGE_3;
         }
         return runStages;
     }
@@ -83,19 +77,19 @@ public class Preprocessor {
             return;
         }
         
-        PreprocessorConfig ppConfig;
-        String ppConfigPath = getJSONConfigPath(args);
-        if(ppConfigPath != null) {
-            ppConfig = PreprocessorConfig.createInstance(new File(ppConfigPath));
+        ReadFrequencyCounterConfig rfConfig;
+        String rfConfigPath = getJSONConfigPath(args);
+        if(rfConfigPath != null) {
+            rfConfig = ReadFrequencyCounterConfig.createInstance(new File(rfConfigPath));
         } else {
-            CommandArgumentsParser<PreprocessorCmdArgs> parser = new CommandArgumentsParser<PreprocessorCmdArgs>();
-            PreprocessorCmdArgs cmdParams = new PreprocessorCmdArgs();
+            CommandArgumentsParser<ReadFrequencyCounterCmdArgs> parser = new CommandArgumentsParser<ReadFrequencyCounterCmdArgs>();
+            ReadFrequencyCounterCmdArgs cmdParams = new ReadFrequencyCounterCmdArgs();
             if(!parser.parse(args, cmdParams)) {
                 printHelp();
                 return;
             }
             
-            ppConfig = cmdParams.getPreprocessorConfig();
+            rfConfig = cmdParams.getReadFrequencyCounterConfig();
         }
         
         int runStages = checkRunStages(args);
@@ -103,39 +97,33 @@ public class Preprocessor {
         int res = 0;
         if((runStages & RUN_STAGE_1) == RUN_STAGE_1 &&
                 res == 0) {
-            ReadIndexBuilder stage1 = new ReadIndexBuilder();
-            res = stage1.run(ppConfig);
+            KmerMatcher stage1 = new KmerMatcher();
+            res = stage1.run(rfConfig);
         }
         
+        /*
         if((runStages & RUN_STAGE_2) == RUN_STAGE_2 &&
                 res == 0) {
             KmerIndexBuilder stage2 = new KmerIndexBuilder();
-            res = stage2.run(ppConfig);
+            res = stage2.run(rfConfig);
         }
+        */
 
-        if((runStages & RUN_STAGE_3) == RUN_STAGE_3 &&
-                res == 0) {
-            KmerStatisticsBuilder stage3 = new KmerStatisticsBuilder();
-            res = stage3.run(ppConfig);
-        }
-        
         System.exit(res);
     }
 
     private static void printHelp() {
         System.out.println("============================================================");
         System.out.println("Kogiri : Massive Comparative Analytic Tools for Metagenomics");
-        System.out.println("Sample Preprocessor");
+        System.out.println("Sample Read Frequency Counter");
         System.out.println("============================================================");
         System.out.println("Usage :");
-        System.out.println("> kogiri preprocess [stage1|stage2|stage3] <arguments ...>");
+        System.out.println("> kogiri readfreqcounter [stage1|stage2] <arguments ...>");
         System.out.println();
         System.out.println("Stage :");
         System.out.println("> stage1");
-        System.out.println("> \tBuild ReadIndex + Generate k-mer histogram");
+        System.out.println("> \tFind matching kmers");
         System.out.println("> stage2");
-        System.out.println("> \tBuild KmerIndex");
-        System.out.println("> stage3");
-        System.out.println("> \tBuild KmerStatistics");
+        System.out.println("> \tCount read frequency");
     }
 }

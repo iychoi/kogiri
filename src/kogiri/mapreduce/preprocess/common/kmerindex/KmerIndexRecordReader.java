@@ -56,7 +56,7 @@ public class KmerIndexRecordReader extends RecordReader<CompressedSequenceWritab
         this.inputFormatConfig = KmerIndexInputFormatConfig.createInstance(this.conf);
         
         FileSystem fs = this.inputIndexPaths[0].getFileSystem(this.conf);
-        this.indexReader = new KmerIndexReader(fs, new Path(this.inputFormatConfig.getKmerIndexIndexPath()), context, this.conf);
+        this.indexReader = new KmerIndexReader(fs, new Path(this.inputFormatConfig.getKmerIndexIndexPath()), this.conf);
         
         this.currentProgress = BigInteger.ZERO;
         StringBuilder endKmer = new StringBuilder();

@@ -30,7 +30,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.mapreduce.TaskAttemptContext;
 
 /**
  *
@@ -43,10 +42,9 @@ public class KmerIndexReader extends AKmerIndexReader {
     private static final int BUFFER_SIZE = 100;
     
     private FileSystem fs;
-    private Path indexIndexPath;
-    private Path[] indexPaths;
+    private Path indexPath;
+    private Path[] indexPartFilePaths;
     private Configuration conf;
-    private TaskAttemptContext context;
     private IndexCloseableMapFileReader[] mapfileReaders;
     private CompressedSequenceWritable beginKey;
     private CompressedSequenceWritable endKey;
@@ -56,28 +54,16 @@ public class KmerIndexReader extends AKmerIndexReader {
     
     private int currentIndex;
     
-    public KmerIndexReader(FileSystem fs, Path kmerIndexIndexPath, TaskAttemptContext context, Configuration conf) throws IOException {
-        initialize(fs, kmerIndexIndexPath, null, null, null, context, conf);
+    public KmerIndexReader(FileSystem fs, Path kmerIndexPath, Configuration conf) throws IOException {
+        initialize(fs, kmerIndexPath, null, null, conf);
     }
     
-    public KmerIndexReader(FileSystem fs, Path kmerIndexIndexPath, Path[] kmerIndexPartPath, TaskAttemptContext context, Configuration conf) throws IOException {
-        initialize(fs, kmerIndexIndexPath, kmerIndexPartPath, null, null, context, conf);
+    public KmerIndexReader(FileSystem fs, Path kmerIndexPath, CompressedSequenceWritable beginKey, CompressedSequenceWritable endKey, Configuration conf) throws IOException {
+        initialize(fs, kmerIndexPath, beginKey, endKey, conf);
     }
     
-    public KmerIndexReader(FileSystem fs, Path kmerIndexIndexPath, CompressedSequenceWritable beginKey, CompressedSequenceWritable endKey, TaskAttemptContext context, Configuration conf) throws IOException {
-        initialize(fs, kmerIndexIndexPath, null, beginKey, endKey, context, conf);
-    }
-    
-    public KmerIndexReader(FileSystem fs, Path kmerIndexIndexPath, Path[] kmerIndexPartPath, CompressedSequenceWritable beginKey, CompressedSequenceWritable endKey, TaskAttemptContext context, Configuration conf) throws IOException {
-        initialize(fs, kmerIndexIndexPath, kmerIndexPartPath, beginKey, endKey, context, conf);
-    }
-    
-    public KmerIndexReader(FileSystem fs, Path kmerIndexIndexPath, String beginKey, String endKey, TaskAttemptContext context, Configuration conf) throws IOException {
-        initialize(fs, kmerIndexIndexPath, null, new CompressedSequenceWritable(beginKey), new CompressedSequenceWritable(endKey), context, conf);
-    }
-    
-    public KmerIndexReader(FileSystem fs, Path kmerIndexIndexPath, Path[] kmerIndexPartPath, String beginKey, String endKey, TaskAttemptContext context, Configuration conf) throws IOException {
-        initialize(fs, kmerIndexIndexPath, kmerIndexPartPath, new CompressedSequenceWritable(beginKey), new CompressedSequenceWritable(endKey), context, conf);
+    public KmerIndexReader(FileSystem fs, Path kmerIndexPath, String beginKey, String endKey, Configuration conf) throws IOException {
+        initialize(fs, kmerIndexPath, new CompressedSequenceWritable(beginKey), new CompressedSequenceWritable(endKey), conf);
     }
     
     private Path[] reorderIndexParts(Path[] indexPaths) {
@@ -102,33 +88,28 @@ public class KmerIndexReader extends AKmerIndexReader {
         return orderedArr;
     }
     
-    private void initialize(FileSystem fs, Path kmerIndexIndexPath, Path[] kmerIndexPartPath, CompressedSequenceWritable beginKey, CompressedSequenceWritable endKey, TaskAttemptContext context, Configuration conf) throws IOException {
+    private void initialize(FileSystem fs, Path kmerIndexPath, CompressedSequenceWritable beginKey, CompressedSequenceWritable endKey, Configuration conf) throws IOException {
         this.fs = fs;
-        this.context = context;
         this.conf = conf;
         this.beginKey = beginKey;
         this.endKey = endKey;
-        this.indexIndexPath = kmerIndexIndexPath;
+        this.indexPath = kmerIndexPath;
 
         Path[] kmerIndexPartFilePath = null;
-        if(kmerIndexPartPath == null) {
-            kmerIndexPartFilePath = KmerIndexHelper.getKmerIndexPartFilePath(conf, this.indexIndexPath);
-        } else {
-            kmerIndexPartFilePath = kmerIndexPartPath;
-        }
+        kmerIndexPartFilePath = KmerIndexHelper.getKmerIndexPartFilePath(conf, this.indexPath);
         
-        this.indexPaths = reorderIndexParts(kmerIndexPartFilePath);
-        if(this.indexPaths == null) {
+        this.indexPartFilePaths = reorderIndexParts(kmerIndexPartFilePath);
+        if(this.indexPartFilePaths == null) {
             throw new IOException("part of index is missing");
         }
         
-        this.mapfileReaders = new IndexCloseableMapFileReader[this.indexPaths.length];
+        this.mapfileReaders = new IndexCloseableMapFileReader[this.indexPartFilePaths.length];
 
-        KmerIndexIndex indexIndex = KmerIndexIndex.createInstance(fs, this.indexIndexPath);
+        KmerIndexIndex indexIndex = KmerIndexIndex.createInstance(fs, this.indexPath);
         
         this.chunkLastKeys = indexIndex.getSortedLastKeys().toArray(new String[0]);
         
-        if(this.chunkLastKeys.length != this.indexPaths.length) {
+        if(this.chunkLastKeys.length != this.indexPartFilePaths.length) {
             throw new IOException("KmerIndexChunkKeys length is different from given index group length");
         }
         
@@ -149,7 +130,7 @@ public class KmerIndexReader extends AKmerIndexReader {
             }
         }
         
-        this.mapfileReaders[this.currentIndex] = new IndexCloseableMapFileReader(fs, this.indexPaths[this.currentIndex].toString(), conf);
+        this.mapfileReaders[this.currentIndex] = new IndexCloseableMapFileReader(fs, this.indexPartFilePaths[this.currentIndex].toString(), conf);
         if(beginKey != null) {
             this.eof = false;
             seek(beginKey);
@@ -185,7 +166,7 @@ public class KmerIndexReader extends AKmerIndexReader {
                         this.eof = true;
                         break;
                     } else {
-                        this.mapfileReaders[this.currentIndex] = new IndexCloseableMapFileReader(this.fs, this.indexPaths[this.currentIndex].toString(), this.conf);
+                        this.mapfileReaders[this.currentIndex] = new IndexCloseableMapFileReader(this.fs, this.indexPartFilePaths[this.currentIndex].toString(), this.conf);
                         this.mapfileReaders[this.currentIndex].closeIndex();
                     }
                 }
@@ -229,11 +210,7 @@ public class KmerIndexReader extends AKmerIndexReader {
     
     @Override
     public Path getIndexPath() {
-        return this.indexIndexPath;
-    }
-    
-    private void seek(String sequence) throws IOException {
-        seek(new CompressedSequenceWritable(sequence));
+        return this.indexPath;
     }
     
     private void seek(CompressedSequenceWritable key) throws IOException {

@@ -15,16 +15,28 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package kogiri.mapreduce.preprocess.common;
+package kogiri.mapreduce.readfrequency.common;
 
 /**
  *
  * @author iychoi
  */
-public class PreprocessConstants {
-    public final static String KMER_HISTOGRAM_FILENAME_EXTENSION = "khist";
-    public final static String READ_INDEX_FILENAME_EXTENSION = "ridx";
-    public final static String KMER_INDEX_INDEX_FILENAME_EXTENSION = "kidx";
-    public final static String KMER_INDEX_PART_FILENAME_EXTENSION = "kidxc";
-    public final static String KMER_STATISTICS_FILENAME_EXTENSION = "kstat";
+public class ReadFrequencyCounterConfigException extends Exception {
+    static final long serialVersionUID = 7818375828146090155L;
+
+    public ReadFrequencyCounterConfigException() {
+        super();
+    }
+
+    public ReadFrequencyCounterConfigException(String string) {
+        super(string);
+    }
+
+    public ReadFrequencyCounterConfigException(String string, Throwable thrwbl) {
+        super(string, thrwbl);
+    }
+
+    public ReadFrequencyCounterConfigException(Throwable thrwbl) {
+        super(thrwbl);
+    }
 }

@@ -22,36 +22,24 @@ import java.util.ArrayList;
 import java.util.List;
 import kogiri.common.hadoop.io.datatypes.CompressedIntArrayWritable;
 import kogiri.common.hadoop.io.datatypes.CompressedSequenceWritable;
-import kogiri.common.hadoop.io.datatypes.MultiFileCompressedSequenceWritable;
-import kogiri.mapreduce.common.namedoutput.NamedOutputs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
 /**
  *
  * @author iychoi
  */
-public class KmerIndexBuilderReducer extends Reducer<MultiFileCompressedSequenceWritable, CompressedIntArrayWritable, CompressedSequenceWritable, CompressedIntArrayWritable> {
+public class KmerIndexBuilderReducer extends Reducer<CompressedSequenceWritable, CompressedIntArrayWritable, CompressedSequenceWritable, CompressedIntArrayWritable> {
     
     private static final Log LOG = LogFactory.getLog(KmerIndexBuilderReducer.class);
     
-    private NamedOutputs namedOutputs;
-    private MultipleOutputs mos;
-    
     @Override
     protected void setup(Context context) throws IOException, InterruptedException {
-        Configuration conf = context.getConfiguration();
-        
-        this.namedOutputs = NamedOutputs.createInstance(conf);
-        
-        this.mos = new MultipleOutputs(context);
     }
     
     @Override
-    protected void reduce(MultiFileCompressedSequenceWritable key, Iterable<CompressedIntArrayWritable> values, Context context) throws IOException, InterruptedException {
+    protected void reduce(CompressedSequenceWritable key, Iterable<CompressedIntArrayWritable> values, Context context) throws IOException, InterruptedException {
         List<Integer> readIDs = new ArrayList<Integer>();
         
         for(CompressedIntArrayWritable value : values) {
@@ -60,22 +48,10 @@ public class KmerIndexBuilderReducer extends Reducer<MultiFileCompressedSequence
             }
         }
         
-        int namedoutputID = key.getFileID();
-        String namedOutput = this.namedOutputs.getRecordFromID(namedoutputID).getIdentifier();
-        
-        CompressedSequenceWritable outKey = new CompressedSequenceWritable(key.getCompressedSequence(), key.getSequenceLength());
-        
-        if(this.mos != null) {
-            this.mos.write(namedOutput, outKey, new CompressedIntArrayWritable(readIDs));
-        }
+        context.write(key, new CompressedIntArrayWritable(readIDs));
     }
     
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
-        this.namedOutputs = null;
-    
-        if(this.mos != null) {
-            this.mos.close();
-        }
     }
 }

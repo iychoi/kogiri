@@ -19,7 +19,7 @@ package kogiri.mapreduce.preprocess.indexing.stage1;
 
 import kogiri.mapreduce.preprocess.common.helpers.KmerHistogramHelper;
 import kogiri.mapreduce.preprocess.common.helpers.ReadIndexHelper;
-import kogiri.mapreduce.preprocess.common.IPreprocessStage;
+import kogiri.mapreduce.preprocess.common.IPreprocessorStage;
 import java.io.IOException;
 import kogiri.common.hadoop.io.format.fasta.FastaReadInputFormat;
 import kogiri.common.helpers.FileSystemHelper;
@@ -52,7 +52,7 @@ import org.apache.hadoop.util.ToolRunner;
  *
  * @author iychoi
  */
-public class ReadIndexBuilder extends Configured implements Tool, IPreprocessStage {
+public class ReadIndexBuilder extends Configured implements Tool, IPreprocessorStage {
     
     private static final Log LOG = LogFactory.getLog(ReadIndexBuilder.class);
     
@@ -121,7 +121,6 @@ public class ReadIndexBuilder extends Configured implements Tool, IPreprocessSta
         ppConfig.getClusterConfiguration().configureTo(conf);
         ppConfig.saveTo(conf);
         
-        
         job.setJarByClass(ReadIndexBuilder.class);
 
         // Mapper
@@ -136,7 +135,7 @@ public class ReadIndexBuilder extends Configured implements Tool, IPreprocessSta
         job.setOutputValueClass(IntWritable.class);
         
         // Inputs
-        Path[] inputFiles = FileSystemHelper.getAllFastaFilePaths(conf, ppConfig.getFastaPath());
+        Path[] inputFiles = FileSystemHelper.getAllFastaFilePath(conf, ppConfig.getFastaPath());
         FileInputFormat.addInputPaths(job, FileSystemHelper.makeCommaSeparated(inputFiles));
         
         LOG.info("Input sample files : " + inputFiles.length);

@@ -17,7 +17,7 @@
  */
 package kogiri.mapreduce.preprocess.common.helpers;
 
-import kogiri.mapreduce.preprocess.common.PreprocessConstants;
+import kogiri.mapreduce.preprocess.common.PreprocessorConstants;
 import org.apache.hadoop.fs.Path;
 
 /**
@@ -34,7 +34,7 @@ public class KmerStatisticsHelper {
     }
     
     public static String makeKmerStatisticsFileName(String filename) {
-        return filename + "." + PreprocessConstants.KMER_STATISTICS_FILENAME_EXTENSION;
+        return filename + "." + PreprocessorConstants.KMER_STATISTICS_FILENAME_EXTENSION;
     }
     
     public static String getCounterGroupNameUnique() {

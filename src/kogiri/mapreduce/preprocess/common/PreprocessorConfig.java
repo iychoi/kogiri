@@ -41,7 +41,7 @@ public class PreprocessorConfig {
     public static final String DEFAULT_KMER_HISTOGRAM_PATH = "histogram";
     public static final String DEFAULT_READ_INDEX_PATH = "readindex";
     public static final String DEFAULT_KMER_INDEX_PATH = "kmerindex";
-    public static final String DEFAULT_STATISITCS_PATH = "statistics";
+    public static final String DEFAULT_KMER_STATISITCS_PATH = "statistics";
     
     private static final String HADOOP_CONFIG_KEY = "kogiri.mapreduce.common.preprocessorconfig";
     
@@ -53,7 +53,7 @@ public class PreprocessorConfig {
     private String kmerHistogramPath = DEFAULT_OUTPUT_ROOT_PATH + "/" + DEFAULT_KMER_HISTOGRAM_PATH;
     private String readIndexPath = DEFAULT_OUTPUT_ROOT_PATH + "/" + DEFAULT_READ_INDEX_PATH;
     private String kmerIndexPath = DEFAULT_OUTPUT_ROOT_PATH + "/" + DEFAULT_KMER_INDEX_PATH;
-    private String statisticsPath = DEFAULT_OUTPUT_ROOT_PATH + "/" + DEFAULT_STATISITCS_PATH;
+    private String kmerStatisticsPath = DEFAULT_OUTPUT_ROOT_PATH + "/" + DEFAULT_KMER_STATISITCS_PATH;
     
     public static PreprocessorConfig createInstance(File file) throws IOException {
         JsonSerializer serializer = new JsonSerializer();
@@ -109,7 +109,7 @@ public class PreprocessorConfig {
         this.kmerHistogramPath = PathHelper.concatPath(outputRootPath, DEFAULT_KMER_HISTOGRAM_PATH);
         this.readIndexPath = PathHelper.concatPath(outputRootPath, DEFAULT_READ_INDEX_PATH);
         this.kmerIndexPath = PathHelper.concatPath(outputRootPath, DEFAULT_KMER_INDEX_PATH);
-        this.statisticsPath = PathHelper.concatPath(outputRootPath, DEFAULT_STATISITCS_PATH);
+        this.kmerStatisticsPath = PathHelper.concatPath(outputRootPath, DEFAULT_KMER_STATISITCS_PATH);
     }
     
     @JsonProperty("histogram_path")
@@ -143,13 +143,13 @@ public class PreprocessorConfig {
     }
     
     @JsonProperty("statistics_path")
-    public String getStatisticsPath() {
-        return this.statisticsPath;
+    public String getKmerStatisticsPath() {
+        return this.kmerStatisticsPath;
     }
     
     @JsonProperty("statistics_path")
-    public void setStatisticsPath(String statisticsPath) {
-        this.statisticsPath = statisticsPath;
+    public void setKmerStatisticsPath(String kmerStatisticsPath) {
+        this.kmerStatisticsPath = kmerStatisticsPath;
     }
 
     @JsonProperty("cluster_configuration")

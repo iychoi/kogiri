@@ -21,6 +21,6 @@ package kogiri.mapreduce.preprocess.common;
  *
  * @author iychoi
  */
-public interface IPreprocessStage {
+public interface IPreprocessorStage {
     public int run(PreprocessorConfig ppConfig) throws Exception;
 }

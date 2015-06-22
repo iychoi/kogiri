@@ -24,7 +24,7 @@ import kogiri.common.helpers.FileSystemHelper;
 import kogiri.common.report.Report;
 import kogiri.mapreduce.common.cmdargs.CommandArgumentsParser;
 import kogiri.mapreduce.preprocess.PreprocessorCmdArgs;
-import kogiri.mapreduce.preprocess.common.IPreprocessStage;
+import kogiri.mapreduce.preprocess.common.IPreprocessorStage;
 import kogiri.mapreduce.preprocess.common.PreprocessorConfig;
 import kogiri.mapreduce.preprocess.common.PreprocessorConfigException;
 import kogiri.mapreduce.preprocess.common.helpers.KmerIndexHelper;
@@ -49,7 +49,7 @@ import org.apache.hadoop.util.ToolRunner;
  *
  * @author iychoi
  */
-public class KmerStatisticsBuilder extends Configured implements Tool, IPreprocessStage {
+public class KmerStatisticsBuilder extends Configured implements Tool, IPreprocessorStage {
     
     private static final Log LOG = LogFactory.getLog(KmerStatisticsBuilder.class);
     
@@ -83,10 +83,6 @@ public class KmerStatisticsBuilder extends Configured implements Tool, IPreproce
     }
     
     private void validatePreprocessorConfig(PreprocessorConfig ppConfig) throws PreprocessorConfigException {
-        if(ppConfig.getFastaPath().size() <= 0) {
-            throw new PreprocessorConfigException("cannot find input sample path");
-        }
-        
         if(ppConfig.getClusterConfiguration() == null) {
             throw new PreprocessorConfigException("cannout find cluster configuration");
         }
@@ -96,7 +92,11 @@ public class KmerStatisticsBuilder extends Configured implements Tool, IPreproce
         }
         
         if(ppConfig.getKmerIndexPath() == null) {
-            throw new PreprocessorConfigException("cannot find k-mer index path");
+            throw new PreprocessorConfigException("cannot find kmer index path");
+        }
+        
+        if(ppConfig.getKmerStatisticsPath() == null) {
+            throw new PreprocessorConfigException("cannot find kmer statistics path");
         }
     }
     
@@ -187,7 +187,7 @@ public class KmerStatisticsBuilder extends Configured implements Tool, IPreproce
                     LOG.info("average " + uniqueCounter.getName() + " : " + real_mean);
                     LOG.info("std-deviation " + uniqueCounter.getName() + " : " + stddev);
 
-                    Path outputHadoopPath = new Path(ppConfig.getStatisticsPath(), KmerStatisticsHelper.makeKmerStatisticsFileName(uniqueCounter.getName()));
+                    Path outputHadoopPath = new Path(ppConfig.getKmerStatisticsPath(), KmerStatisticsHelper.makeKmerStatisticsFileName(uniqueCounter.getName()));
                     FileSystem fs = outputHadoopPath.getFileSystem(conf);
 
                     KmerStatistics statistics = new KmerStatistics();

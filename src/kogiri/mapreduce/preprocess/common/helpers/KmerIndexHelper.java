@@ -20,13 +20,14 @@ package kogiri.mapreduce.preprocess.common.helpers;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import kogiri.common.helpers.FileSystemHelper;
-import kogiri.mapreduce.preprocess.common.PreprocessConstants;
+import kogiri.mapreduce.preprocess.common.PreprocessorConstants;
 import kogiri.mapreduce.preprocess.common.kmerindex.KmerIndexIndexPathFilter;
 import kogiri.mapreduce.preprocess.common.kmerindex.KmerIndexPartPathFilter;
 import org.apache.hadoop.conf.Configuration;
@@ -40,9 +41,9 @@ import org.apache.hadoop.io.MapFile;
  * @author iychoi
  */
 public class KmerIndexHelper {
-    private final static String KMER_INDEX_INDEX_PATH_EXP = ".+\\." + PreprocessConstants.KMER_INDEX_INDEX_FILENAME_EXTENSION + "$";
+    private final static String KMER_INDEX_INDEX_PATH_EXP = ".+\\." + PreprocessorConstants.KMER_INDEX_INDEX_FILENAME_EXTENSION + "$";
     private final static Pattern KMER_INDEX_INDEX_PATH_PATTERN = Pattern.compile(KMER_INDEX_INDEX_PATH_EXP);
-    private final static String KMER_INDEX_PART_PATH_EXP = ".+\\." + PreprocessConstants.KMER_INDEX_PART_FILENAME_EXTENSION + "\\.\\d+$";
+    private final static String KMER_INDEX_PART_PATH_EXP = ".+\\." + PreprocessorConstants.KMER_INDEX_PART_FILENAME_EXTENSION + "\\.\\d+$";
     private final static Pattern KMER_INDEX_PART_PATH_PATTERN = Pattern.compile(KMER_INDEX_PART_PATH_EXP);
     
     public static String makeKmerIndexIndexFileName(Path filePath, int kmerSize) {
@@ -50,7 +51,7 @@ public class KmerIndexHelper {
     }
     
     public static String makeKmerIndexIndexFileName(String filename, int kmerSize) {
-        return filename + "." + kmerSize + "." + PreprocessConstants.KMER_INDEX_INDEX_FILENAME_EXTENSION;
+        return filename + "." + kmerSize + "." + PreprocessorConstants.KMER_INDEX_INDEX_FILENAME_EXTENSION;
     }
     
     public static String makeKmerIndexPartFileName(Path filePath, int kmerSize, int mapreduceID) {
@@ -58,7 +59,7 @@ public class KmerIndexHelper {
     }
     
     public static String makeKmerIndexPartFileName(String filename, int kmerSize, int mapreduceID) {
-        return filename + "." + kmerSize + "." + PreprocessConstants.KMER_INDEX_PART_FILENAME_EXTENSION + "." + mapreduceID;
+        return filename + "." + kmerSize + "." + PreprocessorConstants.KMER_INDEX_PART_FILENAME_EXTENSION + "." + mapreduceID;
     }
     
     public static boolean isKmerIndexIndexFile(Path path) {
@@ -91,7 +92,7 @@ public class KmerIndexHelper {
     
     public static String getFastaFileName(String indexFileName) {
         if(isKmerIndexIndexFile(indexFileName)) {
-            int idx = indexFileName.lastIndexOf("." + PreprocessConstants.KMER_INDEX_INDEX_FILENAME_EXTENSION);
+            int idx = indexFileName.lastIndexOf("." + PreprocessorConstants.KMER_INDEX_INDEX_FILENAME_EXTENSION);
             if (idx >= 0) {
                 String part = indexFileName.substring(0, idx);
                 int idx2 = part.lastIndexOf(".");
@@ -106,7 +107,7 @@ public class KmerIndexHelper {
                 }
             }
         } else if(isKmerIndexPartFile(indexFileName)) {
-            int idx = indexFileName.lastIndexOf("." + PreprocessConstants.KMER_INDEX_PART_FILENAME_EXTENSION);
+            int idx = indexFileName.lastIndexOf("." + PreprocessorConstants.KMER_INDEX_PART_FILENAME_EXTENSION);
             if (idx >= 0) {
                 String part = indexFileName.substring(0, idx);
                 int idx2 = part.lastIndexOf(".");
@@ -141,7 +142,7 @@ public class KmerIndexHelper {
     
     public static int getKmerSize(String indexFileName) {
         if(isKmerIndexIndexFile(indexFileName)) {
-            int idx = indexFileName.lastIndexOf("." + PreprocessConstants.KMER_INDEX_INDEX_FILENAME_EXTENSION);
+            int idx = indexFileName.lastIndexOf("." + PreprocessorConstants.KMER_INDEX_INDEX_FILENAME_EXTENSION);
             if(idx >= 0) {
                 String part = indexFileName.substring(0, idx);
                 int idx2 = part.lastIndexOf(".");
@@ -150,7 +151,7 @@ public class KmerIndexHelper {
                 }
             }
         } else if(isKmerIndexPartFile(indexFileName)) {
-            int idx = indexFileName.lastIndexOf("." + PreprocessConstants.KMER_INDEX_PART_FILENAME_EXTENSION);
+            int idx = indexFileName.lastIndexOf("." + PreprocessorConstants.KMER_INDEX_PART_FILENAME_EXTENSION);
             if(idx >= 0) {
                 String part = indexFileName.substring(0, idx);
                 int idx2 = part.lastIndexOf(".");
@@ -186,6 +187,10 @@ public class KmerIndexHelper {
     }
     
     public static Path[] getAllKmerIndexIndexFilePath(Configuration conf, String[] inputPaths) throws IOException {
+        return KmerIndexHelper.getAllKmerIndexIndexFilePath(conf, FileSystemHelper.makePathFromString(conf, inputPaths));
+    }
+    
+    public static Path[] getAllKmerIndexIndexFilePath(Configuration conf, Collection<String> inputPaths) throws IOException {
         return KmerIndexHelper.getAllKmerIndexIndexFilePath(conf, FileSystemHelper.makePathFromString(conf, inputPaths));
     }
     
@@ -230,6 +235,10 @@ public class KmerIndexHelper {
     }
     
     public static Path[] getAllKmerIndexPartDataFilePath(Configuration conf, String[] inputPaths) throws IOException {
+        return KmerIndexHelper.getAllKmerIndexPartDataFilePath(conf, FileSystemHelper.makePathFromString(conf, inputPaths));
+    }
+    
+    public static Path[] getAllKmerIndexPartDataFilePath(Configuration conf, Collection<String> inputPaths) throws IOException {
         return KmerIndexHelper.getAllKmerIndexPartDataFilePath(conf, FileSystemHelper.makePathFromString(conf, inputPaths));
     }
     

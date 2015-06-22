@@ -52,7 +52,7 @@ public class KmerHistogram {
     private Hashtable<String, KmerHistogramRecord> recordCache = new Hashtable<String, KmerHistogramRecord>();
     private List<KmerHistogramRecord> recordList = new ArrayList<KmerHistogramRecord>();
     
-    private long totalSampleCount = 0;
+    private long totalKmerCount = 0;
     private KmerKeySelection keySelectionAlg = new KmerKeySelection();
     
     public static KmerHistogram createInstance(File file) throws IOException {
@@ -129,12 +129,12 @@ public class KmerHistogram {
             record.increaseFrequency();
         }
         
-        this.totalSampleCount++;
+        this.totalKmerCount++;
     }
     
     @JsonIgnore
-    public long getTotalSampleCount() {
-        return this.totalSampleCount;
+    public long getTotalKmerCount() {
+        return this.totalKmerCount;
     }
     
     @JsonIgnore
@@ -166,7 +166,7 @@ public class KmerHistogram {
             existingRecord.increaseFrequency(record.getFrequency());
         }
         
-        this.totalSampleCount += record.getFrequency();
+        this.totalKmerCount += record.getFrequency();
     }
     
     @JsonIgnore

@@ -94,19 +94,19 @@ public class FileSystemHelper {
         return pathStrings;
     }
     
-    public static Path[] getAllFastaFilePaths(Configuration conf, String inputPathsCommaSeparated) throws IOException {
-        return getAllFastaFilePaths(conf, makePathFromString(conf, splitCommaSeparated(inputPathsCommaSeparated)));
+    public static Path[] getAllFastaFilePath(Configuration conf, String inputPathsCommaSeparated) throws IOException {
+        return getAllFastaFilePath(conf, makePathFromString(conf, splitCommaSeparated(inputPathsCommaSeparated)));
     }
     
-    public static Path[] getAllFastaFilePaths(Configuration conf, String[] inputPaths) throws IOException {
-        return getAllFastaFilePaths(conf, makePathFromString(conf, inputPaths));
+    public static Path[] getAllFastaFilePath(Configuration conf, String[] inputPaths) throws IOException {
+        return getAllFastaFilePath(conf, makePathFromString(conf, inputPaths));
     }
     
-    public static Path[] getAllFastaFilePaths(Configuration conf, Collection<String> inputPaths) throws IOException {
-        return getAllFastaFilePaths(conf, makePathFromString(conf, inputPaths));
+    public static Path[] getAllFastaFilePath(Configuration conf, Collection<String> inputPaths) throws IOException {
+        return getAllFastaFilePath(conf, makePathFromString(conf, inputPaths));
     }
     
-    public static Path[] getAllFastaFilePaths(Configuration conf, Path[] inputPaths) throws IOException {
+    public static Path[] getAllFastaFilePath(Configuration conf, Path[] inputPaths) throws IOException {
         List<Path> inputFiles = new ArrayList<Path>();
         FastaPathFilter filter = new FastaPathFilter();
         

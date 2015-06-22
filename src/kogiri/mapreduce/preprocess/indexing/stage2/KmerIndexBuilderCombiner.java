@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import kogiri.common.hadoop.io.datatypes.CompressedIntArrayWritable;
-import kogiri.common.hadoop.io.datatypes.MultiFileCompressedSequenceWritable;
+import kogiri.common.hadoop.io.datatypes.CompressedSequenceWritable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -30,7 +30,7 @@ import org.apache.hadoop.mapreduce.Reducer;
  *
  * @author iychoi
  */
-public class KmerIndexBuilderCombiner extends Reducer<MultiFileCompressedSequenceWritable, CompressedIntArrayWritable, MultiFileCompressedSequenceWritable, CompressedIntArrayWritable> {
+public class KmerIndexBuilderCombiner extends Reducer<CompressedSequenceWritable, CompressedIntArrayWritable, CompressedSequenceWritable, CompressedIntArrayWritable> {
     
     private static final Log LOG = LogFactory.getLog(KmerIndexBuilderCombiner.class);
     
@@ -39,7 +39,7 @@ public class KmerIndexBuilderCombiner extends Reducer<MultiFileCompressedSequenc
     }
     
     @Override
-    protected void reduce(MultiFileCompressedSequenceWritable key, Iterable<CompressedIntArrayWritable> values, Context context) throws IOException, InterruptedException {
+    protected void reduce(CompressedSequenceWritable key, Iterable<CompressedIntArrayWritable> values, Context context) throws IOException, InterruptedException {
         List<Integer> readIDs = new ArrayList<Integer>();
         
         for(CompressedIntArrayWritable value : values) {

@@ -19,11 +19,12 @@ package kogiri.mapreduce.preprocess.common.helpers;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import kogiri.common.helpers.FileSystemHelper;
-import kogiri.mapreduce.preprocess.common.PreprocessConstants;
+import kogiri.mapreduce.preprocess.common.PreprocessorConstants;
 import kogiri.mapreduce.preprocess.common.readindex.ReadIndexPathFilter;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -36,15 +37,15 @@ import org.apache.hadoop.fs.Path;
  */
 public class ReadIndexHelper {
     
-    private final static String READ_INDEX_PATH_EXP = ".+\\." + PreprocessConstants.READ_INDEX_FILENAME_EXTENSION + "$";
+    private final static String READ_INDEX_PATH_EXP = ".+\\." + PreprocessorConstants.READ_INDEX_FILENAME_EXTENSION + "$";
     private final static Pattern READ_INDEX_PATH_PATTERN = Pattern.compile(READ_INDEX_PATH_EXP);
     
     public static String makeReadIndexFileName(String filename) {
-        return filename + "." + PreprocessConstants.READ_INDEX_FILENAME_EXTENSION;
+        return filename + "." + PreprocessorConstants.READ_INDEX_FILENAME_EXTENSION;
     }
     
     public static String getSampleFileName(String readIndexFileName) {
-        int idx = readIndexFileName.lastIndexOf("." + PreprocessConstants.READ_INDEX_FILENAME_EXTENSION);
+        int idx = readIndexFileName.lastIndexOf("." + PreprocessorConstants.READ_INDEX_FILENAME_EXTENSION);
         if(idx > 0) {
             return readIndexFileName.substring(0, idx);
         }
@@ -64,6 +65,10 @@ public class ReadIndexHelper {
     }
     
     public static Path[] getAllReadIndexFilePath(Configuration conf, String[] inputPaths) throws IOException {
+        return getAllReadIDIndexFilePath(conf, FileSystemHelper.makePathFromString(conf, inputPaths));
+    }
+    
+    public static Path[] getAllReadIndexFilePath(Configuration conf, Collection<String> inputPaths) throws IOException {
         return getAllReadIDIndexFilePath(conf, FileSystemHelper.makePathFromString(conf, inputPaths));
     }
     
