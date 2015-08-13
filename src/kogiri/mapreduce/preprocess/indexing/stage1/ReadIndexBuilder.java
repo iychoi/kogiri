@@ -24,7 +24,7 @@ import java.io.IOException;
 import kogiri.common.hadoop.io.format.fasta.FastaReadInputFormat;
 import kogiri.common.helpers.FileSystemHelper;
 import kogiri.common.report.Report;
-import kogiri.mapreduce.common.cmdargs.CommandArgumentsParser;
+import kogiri.hadoop.common.cmdargs.CommandArgumentsParser;
 import kogiri.mapreduce.common.helpers.MapReduceHelper;
 import kogiri.mapreduce.common.namedoutput.NamedOutputRecord;
 import kogiri.mapreduce.common.namedoutput.NamedOutputs;

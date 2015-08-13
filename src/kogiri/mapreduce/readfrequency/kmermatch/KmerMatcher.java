@@ -24,7 +24,7 @@ import kogiri.mapreduce.readfrequency.common.kmermatch.KmerMatchInputFormatConfi
 import java.io.IOException;
 import kogiri.common.helpers.FileSystemHelper;
 import kogiri.common.report.Report;
-import kogiri.mapreduce.common.cmdargs.CommandArgumentsParser;
+import kogiri.hadoop.common.cmdargs.CommandArgumentsParser;
 import kogiri.mapreduce.common.helpers.MapReduceClusterHelper;
 import kogiri.mapreduce.common.helpers.MapReduceHelper;
 import kogiri.mapreduce.preprocess.common.helpers.KmerIndexHelper;

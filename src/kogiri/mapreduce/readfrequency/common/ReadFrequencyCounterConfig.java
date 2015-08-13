@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import kogiri.common.helpers.PathHelper;
 import kogiri.common.json.JsonSerializer;
-import kogiri.mapreduce.common.config.ClusterConfiguration;
+import kogiri.hadoop.common.config.ClusterConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;

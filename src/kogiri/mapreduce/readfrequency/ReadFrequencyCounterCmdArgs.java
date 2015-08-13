@@ -19,7 +19,7 @@ package kogiri.mapreduce.readfrequency;
 
 import java.util.ArrayList;
 import java.util.List;
-import kogiri.mapreduce.common.cmdargs.CommandArgumentsBase;
+import kogiri.hadoop.common.cmdargs.CommandArgumentsBase;
 import kogiri.mapreduce.readfrequency.common.ReadFrequencyCounterConfig;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;

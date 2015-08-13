@@ -24,7 +24,7 @@ import kogiri.common.hadoop.io.datatypes.CompressedIntArrayWritable;
 import kogiri.common.hadoop.io.datatypes.MultiFileIntWritable;
 import kogiri.common.helpers.FileSystemHelper;
 import kogiri.common.report.Report;
-import kogiri.mapreduce.common.cmdargs.CommandArgumentsParser;
+import kogiri.hadoop.common.cmdargs.CommandArgumentsParser;
 import kogiri.mapreduce.common.helpers.MapReduceHelper;
 import kogiri.mapreduce.common.namedoutput.NamedOutputRecord;
 import kogiri.mapreduce.common.namedoutput.NamedOutputs;

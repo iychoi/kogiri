@@ -22,7 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import kogiri.common.helpers.FileSystemHelper;
 import kogiri.common.report.Report;
-import kogiri.mapreduce.common.cmdargs.CommandArgumentsParser;
+import kogiri.hadoop.common.cmdargs.CommandArgumentsParser;
 import kogiri.mapreduce.preprocess.PreprocessorCmdArgs;
 import kogiri.mapreduce.preprocess.common.IPreprocessorStage;
 import kogiri.mapreduce.preprocess.common.PreprocessorConfig;

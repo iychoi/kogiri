@@ -26,6 +26,7 @@ import java.io.StringWriter;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.spark.SparkConf;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 
@@ -53,6 +54,12 @@ public class JsonSerializer {
     }
     
     public void toJsonConfiguration(Configuration conf, String key, Object obj) throws IOException {
+        String jsonString = toJson(obj);
+        
+        conf.set(key, jsonString);
+    }
+    
+    public void toJsonConfiguration(SparkConf conf, String key, Object obj) throws IOException {
         String jsonString = toJson(obj);
         
         conf.set(key, jsonString);

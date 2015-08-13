@@ -18,7 +18,7 @@
 package kogiri.mapreduce.readfrequency;
 
 import java.io.File;
-import kogiri.mapreduce.common.cmdargs.CommandArgumentsParser;
+import kogiri.hadoop.common.cmdargs.CommandArgumentsParser;
 import kogiri.mapreduce.readfrequency.common.ReadFrequencyCounterConfig;
 import kogiri.mapreduce.readfrequency.kmermatch.KmerMatcher;
 import kogiri.mapreduce.readfrequency.modecount.ModeCounter;

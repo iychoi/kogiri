@@ -26,7 +26,7 @@ import kogiri.common.hadoop.io.datatypes.CompressedSequenceWritable;
 import kogiri.common.hadoop.io.format.fasta.FastaReadInputFormat;
 import kogiri.common.helpers.FileSystemHelper;
 import kogiri.common.report.Report;
-import kogiri.mapreduce.common.cmdargs.CommandArgumentsParser;
+import kogiri.hadoop.common.cmdargs.CommandArgumentsParser;
 import kogiri.mapreduce.common.helpers.MapReduceHelper;
 import kogiri.mapreduce.preprocess.PreprocessorCmdArgs;
 import kogiri.mapreduce.preprocess.common.IPreprocessorStage;

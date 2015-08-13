@@ -18,7 +18,7 @@
 package kogiri.mapreduce.preprocess;
 
 import java.io.File;
-import kogiri.mapreduce.common.cmdargs.CommandArgumentsParser;
+import kogiri.hadoop.common.cmdargs.CommandArgumentsParser;
 import kogiri.mapreduce.preprocess.common.PreprocessorConfig;
 import kogiri.mapreduce.preprocess.indexing.stage1.ReadIndexBuilder;
 import kogiri.mapreduce.preprocess.indexing.stage2.KmerIndexBuilder;
