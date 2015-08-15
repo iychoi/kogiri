@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-package kogiri.mapreduce.readfrequency.common.helpers;
+package kogiri.spark.readfrequency.common.helpers;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import kogiri.common.helpers.FileSystemHelper;
-import kogiri.mapreduce.readfrequency.common.ReadFrequencyCounterConstants;
-import kogiri.mapreduce.readfrequency.common.kmermatch.KmerMatchResultPathFilter;
+import kogiri.spark.readfrequency.common.ReadFrequencyCounterConstants;
+import kogiri.spark.readfrequency.common.kmermatch.KmerMatchResultPathFilter;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;

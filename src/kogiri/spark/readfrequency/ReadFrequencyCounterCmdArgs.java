@@ -15,12 +15,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package kogiri.mapreduce.readfrequency;
+package kogiri.spark.readfrequency;
 
 import java.util.ArrayList;
 import java.util.List;
 import kogiri.hadoop.common.cmdargs.CommandArgumentsBase;
-import kogiri.mapreduce.readfrequency.common.ReadFrequencyCounterConfig;
+import kogiri.spark.readfrequency.common.ReadFrequencyCounterConfig;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 

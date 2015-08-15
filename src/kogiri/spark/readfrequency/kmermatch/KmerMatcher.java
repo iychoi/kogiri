@@ -15,58 +15,43 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package kogiri.mapreduce.readfrequency.kmermatch;
+package kogiri.spark.readfrequency.kmermatch;
 
-import kogiri.mapreduce.readfrequency.common.kmermatch.KmerMatcherFileMapping;
-import kogiri.mapreduce.readfrequency.common.helpers.KmerMatchHelper;
-import kogiri.mapreduce.readfrequency.common.kmermatch.KmerMatchInputFormat;
-import kogiri.mapreduce.readfrequency.common.kmermatch.KmerMatchInputFormatConfig;
-import java.io.IOException;
+import kogiri.common.hadoop.io.datatypes.CompressedIntArrayWritable;
+import kogiri.common.hadoop.io.datatypes.CompressedSequenceWritable;
 import kogiri.common.helpers.FileSystemHelper;
-import kogiri.common.report.Report;
 import kogiri.hadoop.common.cmdargs.CommandArgumentsParser;
-import kogiri.mapreduce.common.helpers.MapReduceClusterHelper;
-import kogiri.mapreduce.common.helpers.MapReduceHelper;
 import kogiri.mapreduce.preprocess.common.helpers.KmerIndexHelper;
-import kogiri.mapreduce.readfrequency.ReadFrequencyCounterCmdArgs;
-import kogiri.mapreduce.readfrequency.common.IReadFrequencyCounterStage;
-import kogiri.mapreduce.readfrequency.common.ReadFrequencyCounterConfig;
-import kogiri.mapreduce.readfrequency.common.ReadFrequencyCounterConfigException;
+import kogiri.mapreduce.preprocess.common.kmerindex.KmerIndexInputFormat;
+import kogiri.mapreduce.preprocess.common.kmerindex.KmerIndexInputFormatConfig;
+import kogiri.spark.readfrequency.ReadFrequencyCounterCmdArgs;
+import kogiri.spark.readfrequency.common.ReadFrequencyCounterConfig;
+import kogiri.spark.readfrequency.common.ReadFrequencyCounterConfigException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
-import org.apache.hadoop.util.Tool;
-import org.apache.hadoop.util.ToolRunner;
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.PairFunction;
+import scala.Tuple2;
 
 /**
  *
  * @author iychoi
  */
-public class KmerMatcher extends Configured implements Tool, IReadFrequencyCounterStage {
+public class KmerMatcher {
     
     private static final Log LOG = LogFactory.getLog(KmerMatcher.class);
     
     private static final int PARTITIONS_PER_CORE = 10;
     
     public static void main(String[] args) throws Exception {
-        int res = ToolRunner.run(new Configuration(), new KmerMatcher(), args);
+        int res = run(args);
         System.exit(res);
     }
     
-    public KmerMatcher() {
-        
-    }
-    
-    @Override
-    public int run(String[] args) throws Exception {
+    public static int run(String[] args) throws Exception {
         CommandArgumentsParser<ReadFrequencyCounterCmdArgs> parser = new CommandArgumentsParser<ReadFrequencyCounterCmdArgs>();
         ReadFrequencyCounterCmdArgs cmdParams = new ReadFrequencyCounterCmdArgs();
         if(!parser.parse(args, cmdParams)) {
@@ -79,14 +64,11 @@ public class KmerMatcher extends Configured implements Tool, IReadFrequencyCount
         return runJob(rfConfig);
     }
     
-    @Override
-    public int run(ReadFrequencyCounterConfig rfConfig) throws Exception {
-        setConf(new Configuration());
+    public static int run(ReadFrequencyCounterConfig rfConfig) throws Exception {
         return runJob(rfConfig);
     }
     
-    
-    private void validateReadFrequencyCounterConfig(ReadFrequencyCounterConfig rfConfig) throws ReadFrequencyCounterConfigException {
+    private static void validateReadFrequencyCounterConfig(ReadFrequencyCounterConfig rfConfig) throws ReadFrequencyCounterConfigException {
         if(rfConfig.getKmerIndexPath().size() <= 0) {
             throw new ReadFrequencyCounterConfigException("cannot find input kmer index path");
         }
@@ -108,40 +90,21 @@ public class KmerMatcher extends Configured implements Tool, IReadFrequencyCount
         }
     }
     
-    private int runJob(ReadFrequencyCounterConfig rfConfig) throws Exception {
+    private static int runJob(ReadFrequencyCounterConfig rfConfig) throws Exception {
         // check config
         validateReadFrequencyCounterConfig(rfConfig);
         
         // configuration
-        Configuration conf = this.getConf();
-        
-        Job job = new Job(conf, "Kogiri Read Frequency Counter - Finding Matching Kmers");
-        conf = job.getConfiguration();
+        SparkConf sparkConf = new SparkConf();
+        sparkConf.setAppName("Kogiri Read Frequency Counter - Finding Matching Kmers");
+        JavaSparkContext sparkContext = new JavaSparkContext(sparkConf);
         
         // set user configuration
-        rfConfig.getClusterConfiguration().configureTo(conf);
-        rfConfig.saveTo(conf);
+        rfConfig.getClusterConfiguration().configureTo(sparkConf);
+        rfConfig.saveTo(sparkConf);
         
-        job.setJarByClass(KmerMatcher.class);
-        
-        // Mapper
-        job.setMapperClass(KmerMatcherMapper.class);
-        job.setInputFormatClass(KmerMatchInputFormat.class);
-        job.setMapOutputKeyClass(Text.class);
-        job.setMapOutputValueClass(Text.class);
-
-        // Specify key / value
-        job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(Text.class);
-
         // Inputs
-        Path[] kmerIndexFiles = KmerIndexHelper.getAllKmerIndexIndexFilePath(conf, rfConfig.getKmerIndexPath());
-        KmerMatchInputFormat.addInputPaths(job, FileSystemHelper.makeCommaSeparated(kmerIndexFiles));
-
-        LOG.info("Input kmer index files : " + kmerIndexFiles.length);
-        for(Path inputFile : kmerIndexFiles) {
-            LOG.info("> " + inputFile.toString());
-        }
+        Path[] kmerIndexFiles = KmerIndexHelper.getAllKmerIndexIndexFilePath(sparkContext.hadoopConfiguration(), rfConfig.getKmerIndexPath());
         
         int kmerSize = 0;
         for(Path inputFile : kmerIndexFiles) {
@@ -156,6 +119,33 @@ public class KmerMatcher extends Configured implements Tool, IReadFrequencyCount
             }
         }
         
+        for(Path kmerIndexFile : kmerIndexFiles) {
+            Path[] kmerIndexPartFilePath = KmerIndexHelper.getKmerIndexPartFilePath(sparkContext.hadoopConfiguration(), kmerIndexFile);
+            
+            KmerIndexInputFormatConfig inputFormatConfig = new KmerIndexInputFormatConfig();
+            inputFormatConfig.setKmerSize(kmerSize);
+            inputFormatConfig.setKmerIndexIndexPath(kmerIndexFile.toString());
+            KmerIndexInputFormat.setInputFormatConfig(sparkContext.hadoopConfiguration(), inputFormatConfig);
+            
+            JavaPairRDD<CompressedSequenceWritable, CompressedIntArrayWritable> kmerIndexRDD = sparkContext.newAPIHadoopFile(FileSystemHelper.makeCommaSeparated(kmerIndexPartFilePath), KmerIndexInputFormat.class, CompressedSequenceWritable.class, CompressedIntArrayWritable.class, sparkContext.hadoopConfiguration());
+            //JavaPairRDD<String, int[]> indexRDD = kmerIndexRDD.mapToPair(new KmerIndexToStringMapper());
+            Path dumpPath = new Path(rfConfig.getKmerMatchPath(), kmerIndexFile.getName() + ".dump");
+            kmerIndexRDD.saveAsTextFile(dumpPath.toString());
+        }
+        
+        /*
+        JavaPairRDD<LongWritable, FastaRead> inputRDD = sparkContext.newAPIHadoopFile(inputFile.toString(), FastaReadInputFormat.class, LongWritable.class, FastaRead.class, sparkContext.hadoopConfiguration());
+        JavaPairRDD<Tuple2<LongWritable, FastaRead>, Long> indexedRDD = inputRDD.zipWithIndex();
+
+        JavaPairRDD<Long, Integer> ridxRDD = indexedRDD.mapToPair(new ReadIndexBuilderMapper());
+
+        String ridxFilename = ReadIndexHelper.makeReadIndexFileName(inputFile.getName());
+        Path ridxPath = new Path(ppConfig.getReadIndexPath(), ridxFilename);
+        ridxRDD.saveAsTextFile(ridxPath.toString());
+        */
+        
+        /*
+        // Mapper
         KmerMatcherFileMapping fileMapping = new KmerMatcherFileMapping();
         for(Path kmerIndexFile : kmerIndexFiles) {
             String fastaFilename = KmerIndexHelper.getFastaFileName(kmerIndexFile.getName());
@@ -202,8 +192,11 @@ public class KmerMatcher extends Configured implements Tool, IReadFrequencyCount
         }
         
         return result ? 0 : 1;
+        */
+        return 0;
     }
     
+    /*
     private void commit(Path outputPath, Configuration conf) throws IOException {
         FileSystem fs = outputPath.getFileSystem(conf);
         
@@ -231,6 +224,15 @@ public class KmerMatcher extends Configured implements Tool, IReadFrequencyCount
             }
         } else {
             throw new IOException("path not found : " + outputPath.toString());
+        }
+    }
+    */
+
+    private static class KmerIndexToStringMapper implements PairFunction<Tuple2<CompressedSequenceWritable, CompressedIntArrayWritable>, String, int[]> {
+
+        @Override
+        public Tuple2<String, int[]> call(Tuple2<CompressedSequenceWritable, CompressedIntArrayWritable> t) throws Exception {
+            return new Tuple2<String, int[]>(t._1.toString(), t._2.get());
         }
     }
 }

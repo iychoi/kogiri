@@ -29,11 +29,13 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.codehaus.jackson.annotate.JsonTypeInfo;
 
 /**
  *
  * @author iychoi
  */
+@JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
 public class ReadFrequencyCounterConfig {
     
     public static final String DEFAULT_OUTPUT_ROOT_PATH = "./kogiri_readfrequency_output";

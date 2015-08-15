@@ -25,6 +25,7 @@ import kogiri.common.hadoop.io.datatypes.CompressedIntArrayWritable;
 import kogiri.common.hadoop.io.datatypes.CompressedSequenceWritable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -55,6 +56,10 @@ public class KmerIndexInputFormat extends SequenceFileInputFormat<CompressedSequ
     
     public static void setInputFormatConfig(JobContext job, KmerIndexInputFormatConfig inputFormatConfig) throws IOException {
         inputFormatConfig.saveTo(job.getConfiguration());
+    }
+    
+    public static void setInputFormatConfig(Configuration conf, KmerIndexInputFormatConfig inputFormatConfig) throws IOException {
+        inputFormatConfig.saveTo(conf);
     }
     
     public List<InputSplit> getSplits(JobContext job) throws IOException {

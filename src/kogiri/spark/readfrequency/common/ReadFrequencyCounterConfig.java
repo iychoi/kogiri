@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package kogiri.mapreduce.readfrequency.common;
+package kogiri.spark.readfrequency.common;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,13 +27,16 @@ import kogiri.hadoop.common.config.ClusterConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.spark.SparkConf;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.codehaus.jackson.annotate.JsonTypeInfo;
 
 /**
  *
  * @author iychoi
  */
+@JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
 public class ReadFrequencyCounterConfig {
     
     public static final String DEFAULT_OUTPUT_ROOT_PATH = "./kogiri_readfrequency_output";
@@ -41,7 +44,7 @@ public class ReadFrequencyCounterConfig {
     public static final String DEFAULT_READ_FREQUENCY_PATH = "readfrequency";
     public static final double DEFAULT_STANDARD_DEVIATION_FACTOR = 2.0;
     
-    private static final String HADOOP_CONFIG_KEY = "kogiri.mapreduce.readfrequency.common.readfrequencycounterconfig";
+    private static final String HADOOP_CONFIG_KEY = "kogiri.spark.readfrequency.common.readfrequencycounterconfig";
     
     private ClusterConfiguration clusterConfiguration = new ClusterConfiguration();
     private String reportFilePath;
@@ -170,6 +173,12 @@ public class ReadFrequencyCounterConfig {
     
     @JsonIgnore
     public void saveTo(Configuration conf) throws IOException {
+        JsonSerializer serializer = new JsonSerializer();
+        serializer.toJsonConfiguration(conf, HADOOP_CONFIG_KEY, this);
+    }
+    
+    @JsonIgnore
+    public void saveTo(SparkConf conf) throws IOException {
         JsonSerializer serializer = new JsonSerializer();
         serializer.toJsonConfiguration(conf, HADOOP_CONFIG_KEY, this);
     }

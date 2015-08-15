@@ -15,9 +15,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package kogiri.mapreduce.readfrequency.common.kmermatch;
+package kogiri.spark.readfrequency.common.kmermatch;
 
-import kogiri.mapreduce.readfrequency.common.helpers.KmerMatchHelper;
+import kogiri.spark.readfrequency.common.helpers.KmerMatchHelper;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 

@@ -17,8 +17,6 @@
  */
 package kogiri.common.fasta;
 
-import java.io.Serializable;
-
 /**
  *
  * @author iychoi

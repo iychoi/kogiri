@@ -47,6 +47,24 @@ public class FileSystemHelper {
         return sb.toString();
     }
     
+    public static String makeCommaSeparated(Collection<String> strs) {
+        if(strs == null) {
+            return null;
+        }
+        
+        StringBuilder sb = new StringBuilder();
+        int i=0;
+        for(String str : strs) {
+            sb.append(str);
+            i++;
+            
+            if(i<strs.size()) {
+                sb.append(",");
+            }
+        }
+        return sb.toString();
+    }
+    
     public static String makeCommaSeparated(String[] strs) {
         if(strs == null) {
             return null;

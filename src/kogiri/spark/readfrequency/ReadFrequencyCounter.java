@@ -15,13 +15,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package kogiri.mapreduce.readfrequency;
+package kogiri.spark.readfrequency;
 
 import java.io.File;
 import kogiri.hadoop.common.cmdargs.CommandArgumentsParser;
-import kogiri.mapreduce.readfrequency.common.ReadFrequencyCounterConfig;
-import kogiri.mapreduce.readfrequency.kmermatch.KmerMatcher;
-import kogiri.mapreduce.readfrequency.modecount.ModeCounter;
+import kogiri.spark.readfrequency.common.ReadFrequencyCounterConfig;
+import kogiri.spark.readfrequency.kmermatch.KmerMatcher;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -98,15 +97,15 @@ public class ReadFrequencyCounter {
         int res = 0;
         if((runStages & RUN_STAGE_1) == RUN_STAGE_1 &&
                 res == 0) {
-            KmerMatcher stage1 = new KmerMatcher();
-            res = stage1.run(rfConfig);
+            res = KmerMatcher.run(rfConfig);
         }
-        
+        /*
         if((runStages & RUN_STAGE_2) == RUN_STAGE_2 &&
                 res == 0) {
             ModeCounter stage2 = new ModeCounter();
             res = stage2.run(rfConfig);
         }
+        */
 
         System.exit(res);
     }
