@@ -15,28 +15,15 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package kogiri.spark.preprocess.common;
+package kogiri.mapreduce.readfrequency.common;
 
 /**
  *
  * @author iychoi
  */
-public class PreprocessorConfigException extends Exception {
-    static final long serialVersionUID = 7818375828146090155L;
-
-    public PreprocessorConfigException() {
-        super();
-    }
-
-    public PreprocessorConfigException(String string) {
-        super(string);
-    }
-
-    public PreprocessorConfigException(String string, Throwable thrwbl) {
-        super(string, thrwbl);
-    }
-
-    public PreprocessorConfigException(Throwable thrwbl) {
-        super(thrwbl);
-    }
+public class ReadFrequencyCounterConstants {
+    public final static String KMER_MATCH_TABLE_FILENAME = "table.json";
+    public final static String KMER_MATCH_RESULT_FILENAME_PREFIX = "result";
+    public final static String KMER_MATCH_RESULT_FILENAME_EXTENSION = "match";
+    public final static String READ_FREQUENCY_FILENAME_FILENAME_EXTENSION = "readfreq";
 }

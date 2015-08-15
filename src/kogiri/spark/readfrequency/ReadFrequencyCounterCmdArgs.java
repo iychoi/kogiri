@@ -15,12 +15,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package kogiri.spark.preprocess;
+package kogiri.mapreduce.readfrequency;
 
 import java.util.ArrayList;
 import java.util.List;
 import kogiri.hadoop.common.cmdargs.CommandArgumentsBase;
-import kogiri.spark.preprocess.common.PreprocessorConfig;
+import kogiri.mapreduce.readfrequency.common.ReadFrequencyCounterConfig;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 
@@ -28,21 +28,35 @@ import org.kohsuke.args4j.Option;
  *
  * @author iychoi
  */
-public class PreprocessorCmdArgs extends CommandArgumentsBase {
+public class ReadFrequencyCounterCmdArgs extends CommandArgumentsBase {
     
-    public PreprocessorCmdArgs() {
+    public ReadFrequencyCounterCmdArgs() {
         
     }
     
-    @Option(name = "-k", aliases = "--kmersize", usage = "specify kmer size")
-    protected int kmerSize = PreprocessorConfig.DEFAULT_KMERSIZE;
+    @Option(name = "--stddev_factor", usage = "specify standard deviation factor")
+    protected double stddevFactor = ReadFrequencyCounterConfig.DEFAULT_STANDARD_DEVIATION_FACTOR;
+    
+    public double getStandardDeviationFactor() {
+        return this.stddevFactor;
+    }
+    
+    @Option(name = "--histogram", usage = "specify kmer histogram path")
+    protected String kmerHistogramPath;
 
-    public int getKmerSize() {
-        return this.kmerSize;
+    public String getKmerHistogramPath() {
+        return this.kmerHistogramPath;
+    }
+    
+    @Option(name = "--statistics", usage = "specify kmer statistics path")
+    protected String kmerStatisticsPath;
+    
+    public String getKmerStatisticsPath() {
+        return this.kmerStatisticsPath;
     }
     
     @Option(name = "-o", usage = "specify output path")
-    private String outputPath = PreprocessorConfig.DEFAULT_OUTPUT_ROOT_PATH;
+    private String outputPath = ReadFrequencyCounterConfig.DEFAULT_OUTPUT_ROOT_PATH;
         
     public String getOutputPath() {
         return this.outputPath;
@@ -91,7 +105,8 @@ public class PreprocessorCmdArgs extends CommandArgumentsBase {
            return false;
         }
         
-        if(this.kmerSize <= 0 || 
+        if(this.kmerHistogramPath == null ||
+                this.kmerStatisticsPath == null ||
                 this.outputPath == null ||
                 this.inputPaths == null || 
                 this.inputPaths.isEmpty() || 
@@ -102,13 +117,15 @@ public class PreprocessorCmdArgs extends CommandArgumentsBase {
         return true;
     }
     
-    public PreprocessorConfig getPreprocessorConfig() {
-        PreprocessorConfig config = new PreprocessorConfig();
+    public ReadFrequencyCounterConfig getReadFrequencyCounterConfig() {
+        ReadFrequencyCounterConfig config = new ReadFrequencyCounterConfig();
         
         config.setReportPath(this.reportfile);
         config.setClusterConfiguration(this.cluster);
-        config.setKmerSize(this.kmerSize);
-        config.addFastaPath(this.inputPaths);
+        config.addKmerIndexPath(this.inputPaths);
+        config.setKmerHistogramPath(this.kmerHistogramPath);
+        config.setKmerStatisticsPath(this.kmerStatisticsPath);
+        config.setStandardDeviationFactor(this.stddevFactor);
         config.setOutputRootPath(this.outputPath);
         return config;
     }
