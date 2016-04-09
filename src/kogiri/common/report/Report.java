@@ -62,7 +62,7 @@ public class Report {
             }
         }
         
-        Writer writer = new FileWriter(f);
+        Writer writer = new FileWriter(f, true);
         boolean first = true;
         for(Job job : this.jobs) {
             if(first) {
