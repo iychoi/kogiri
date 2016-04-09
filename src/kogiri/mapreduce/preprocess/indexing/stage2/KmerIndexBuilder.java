@@ -168,6 +168,15 @@ public class KmerIndexBuilder extends Configured implements Tool, IPreprocessorS
             FileOutputFormat.setOutputPath(job, new Path(roundOutputPath));
             job.setOutputFormatClass(MapFileOutputFormat.class);
             
+            // Use many reducers
+            int reducersPerNode = ppConfig.getClusterConfiguration().getMachineCores() / 2;
+            if(reducersPerNode < 1) {
+                reducersPerNode = 1;
+            }
+            int reducers = ppConfig.getClusterConfiguration().getMachineNum() * (ppConfig.getClusterConfiguration().getMachineCores() / 2);
+            LOG.info("Reducers : " + reducers);
+            job.setNumReduceTasks(reducers);
+            
             // Execute job and return status
             boolean result = job.waitForCompletion(true);
             

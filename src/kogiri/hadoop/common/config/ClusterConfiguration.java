@@ -42,7 +42,6 @@ public class ClusterConfiguration {
     private int mrVersion = 2;
     private int machineCores = 1;
     private int machineNum = 1;
-    private int machineMaxReducers = 1;
     
     private ArrayList<ConfigurationParam> externalParams = new ArrayList<ConfigurationParam>();
     
@@ -57,8 +56,12 @@ public class ClusterConfiguration {
     }
     
     public static ClusterConfiguration createInstanceFromPredefined(String configurationName) throws IOException {
-        String jsonConfig = JarResourceHelper.getResourceAsText(PREDEFINED_CLUSTER_CONFIG_PATH + configurationName.toLowerCase() + ".json");
-        return createInstance(jsonConfig);
+        if(JarResourceHelper.hasResource(PREDEFINED_CLUSTER_CONFIG_PATH + configurationName.toLowerCase() + ".json")) {
+            String jsonConfig = JarResourceHelper.getResourceAsText(PREDEFINED_CLUSTER_CONFIG_PATH + configurationName.toLowerCase() + ".json");
+            return createInstance(jsonConfig);
+        } else {
+            throw new IOException("file not found");
+        }
     }
     
     public ClusterConfiguration() {
@@ -85,16 +88,6 @@ public class ClusterConfiguration {
         this.machineNum = machine_num;
     }
     
-    @JsonProperty("machine_max_reducers")
-    public int getMachineMaxReducers() {
-        return this.machineMaxReducers;
-    }
-    
-    @JsonProperty("machine_max_reducers")
-    public void getMachineMaxReducers(int machine_max_reducers) {
-        this.machineMaxReducers = machine_max_reducers;
-    }
-
     @JsonProperty("mr_version")
     public int getMapReduceVersion() {
         return this.mrVersion;
@@ -148,8 +141,6 @@ public class ClusterConfiguration {
         sb.append("CoresPerMachine = " + machineCores);
         sb.append("\n");
         sb.append("MachineNumInCluster = " + machineNum);
-        sb.append("\n");
-        sb.append("MachineMaxReducers = " + machineMaxReducers);
         
         for(ConfigurationParam param : this.externalParams) {
             sb.append("\n");
