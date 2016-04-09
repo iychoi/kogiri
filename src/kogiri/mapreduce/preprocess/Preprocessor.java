@@ -18,6 +18,8 @@
 package kogiri.mapreduce.preprocess;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import kogiri.hadoop.common.cmdargs.CommandArgumentsParser;
 import kogiri.mapreduce.preprocess.common.PreprocessorConfig;
 import kogiri.mapreduce.preprocess.indexing.stage1.ReadIndexBuilder;
@@ -66,6 +68,19 @@ public class Preprocessor {
         return runStages;
     }
     
+    private static String[] removeRunStages(String[] args) {
+        List<String> param = new ArrayList<String>();
+        for(String arg : args) {
+            if(!arg.equalsIgnoreCase("stage1") &&
+                    !arg.equalsIgnoreCase("stage2") &&
+                    !arg.equalsIgnoreCase("stage3")) {
+                param.add(arg);
+            }
+        }
+        
+        return param.toArray(new String[0]);
+    }
+    
     private static String getJSONConfigPath(String[] args) {
         for(int i=0;i<args.length;i++) {
             if(args[i].equalsIgnoreCase("--json")) {
@@ -83,22 +98,23 @@ public class Preprocessor {
             return;
         }
         
+        int runStages = checkRunStages(args);
+        String[] params = removeRunStages(args);
+        
         PreprocessorConfig ppConfig;
-        String ppConfigPath = getJSONConfigPath(args);
+        String ppConfigPath = getJSONConfigPath(params);
         if(ppConfigPath != null) {
             ppConfig = PreprocessorConfig.createInstance(new File(ppConfigPath));
         } else {
             CommandArgumentsParser<PreprocessorCmdArgs> parser = new CommandArgumentsParser<PreprocessorCmdArgs>();
             PreprocessorCmdArgs cmdParams = new PreprocessorCmdArgs();
-            if(!parser.parse(args, cmdParams)) {
+            if(!parser.parse(params, cmdParams)) {
                 printHelp();
                 return;
             }
             
             ppConfig = cmdParams.getPreprocessorConfig();
         }
-        
-        int runStages = checkRunStages(args);
         
         int res = 0;
         if((runStages & RUN_STAGE_1) == RUN_STAGE_1 &&
