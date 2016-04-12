@@ -18,6 +18,8 @@
 package kogiri.mapreduce.readfrequency;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import kogiri.hadoop.common.cmdargs.CommandArgumentsParser;
 import kogiri.mapreduce.readfrequency.common.ReadFrequencyCounterConfig;
 import kogiri.mapreduce.readfrequency.kmermatch.KmerMatcher;
@@ -61,6 +63,19 @@ public class ReadFrequencyCounter {
         return runStages;
     }
     
+    private static String[] removeRunStages(String[] args) {
+        List<String> param = new ArrayList<String>();
+        for(String arg : args) {
+            if(!arg.equalsIgnoreCase("stage1") &&
+                    !arg.equalsIgnoreCase("stage2") &&
+                    !arg.equalsIgnoreCase("stage3")) {
+                param.add(arg);
+            }
+        }
+        
+        return param.toArray(new String[0]);
+    }
+    
     private static String getJSONConfigPath(String[] args) {
         for(int i=0;i<args.length;i++) {
             if(args[i].equalsIgnoreCase("--json")) {
@@ -78,22 +93,23 @@ public class ReadFrequencyCounter {
             return;
         }
         
+        int runStages = checkRunStages(args);
+        String[] params = removeRunStages(args);
+        
         ReadFrequencyCounterConfig rfConfig;
-        String rfConfigPath = getJSONConfigPath(args);
+        String rfConfigPath = getJSONConfigPath(params);
         if(rfConfigPath != null) {
             rfConfig = ReadFrequencyCounterConfig.createInstance(new File(rfConfigPath));
         } else {
             CommandArgumentsParser<ReadFrequencyCounterCmdArgs> parser = new CommandArgumentsParser<ReadFrequencyCounterCmdArgs>();
             ReadFrequencyCounterCmdArgs cmdParams = new ReadFrequencyCounterCmdArgs();
-            if(!parser.parse(args, cmdParams)) {
+            if(!parser.parse(params, cmdParams)) {
                 printHelp();
                 return;
             }
             
             rfConfig = cmdParams.getReadFrequencyCounterConfig();
         }
-        
-        int runStages = checkRunStages(args);
         
         int res = 0;
         if((runStages & RUN_STAGE_1) == RUN_STAGE_1 &&
