@@ -28,6 +28,7 @@ public class KmerStatisticsHelper {
     private final static String COUNTER_GROUP_NAME_UNIQUE = "KmerStatisticsUnique";
     private final static String COUNTER_GROUP_NAME_TOTAL = "KmerStatisticsTotal";
     private final static String COUNTER_GROUP_NAME_SQUARE = "KmerStatisticsSquare";
+    private final static String COUNTER_GROUP_NAME_LOGTFSQUARE = "KmerStatisticsLogTFSquare";
     
     public static String makeKmerStatisticsFileName(Path filePath) {
         return makeKmerStatisticsFileName(filePath.getName());
@@ -47,5 +48,9 @@ public class KmerStatisticsHelper {
 
     public static String getCounterGroupNameSquare() {
         return COUNTER_GROUP_NAME_SQUARE;
+    }
+
+    public static String getCounterGroupNameLogTFSquare() {
+        return COUNTER_GROUP_NAME_LOGTFSQUARE;
     }
 }

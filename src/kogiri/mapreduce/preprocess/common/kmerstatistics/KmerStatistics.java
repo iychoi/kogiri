@@ -44,6 +44,7 @@ public class KmerStatistics {
     private long total;
     private double avgFrequency;
     private double stdDeviation;
+    private double tfCosnormBase;
     
     public static KmerStatistics createInstance(File file) throws IOException {
         JsonSerializer serializer = new JsonSerializer();
@@ -131,6 +132,16 @@ public class KmerStatistics {
     @JsonProperty("std_deviation")
     public void setStdDeviation(double stdDeviation) {
         this.stdDeviation = stdDeviation;
+    }
+    
+    @JsonProperty("tf_cosnorm_base")
+    public void setTFCosineNormBase(double tfCosnormBase) {
+        this.tfCosnormBase = tfCosnormBase;
+    }
+    
+    @JsonProperty("tf_cosnorm_base")
+    public double getTFCosineNormBase() {
+        return this.tfCosnormBase;
     }
     
     @JsonIgnore

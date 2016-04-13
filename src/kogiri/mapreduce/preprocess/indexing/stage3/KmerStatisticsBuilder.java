@@ -159,23 +159,30 @@ public class KmerStatisticsBuilder extends Configured implements Tool, IPreproce
                 CounterGroup uniqueGroup = job.getCounters().getGroup(KmerStatisticsHelper.getCounterGroupNameUnique());
                 CounterGroup totalGroup = job.getCounters().getGroup(KmerStatisticsHelper.getCounterGroupNameTotal());
                 CounterGroup squareGroup = job.getCounters().getGroup(KmerStatisticsHelper.getCounterGroupNameSquare());
+                CounterGroup logTFSquareGroup = job.getCounters().getGroup(KmerStatisticsHelper.getCounterGroupNameLogTFSquare());
 
                 Iterator<Counter> uniqueIterator = uniqueGroup.iterator();
                 while(uniqueIterator.hasNext()) {
                     long count = 0;
                     long length = 0;
                     long square = 0;
+                    double logTFSquare = 0;
                     double real_mean = 0;
                     double stddev = 0;
+                    double tf_cosnorm_base = 0;
 
                     Counter uniqueCounter = uniqueIterator.next();
                     Counter totalCounter = totalGroup.findCounter(uniqueCounter.getName());
                     Counter squareCounter = squareGroup.findCounter(uniqueCounter.getName());
+                    Counter logTFSquareCounter = logTFSquareGroup.findCounter(uniqueCounter.getName());
 
                     count = uniqueCounter.getValue();
                     length = totalCounter.getValue();
                     square = squareCounter.getValue();
+                    logTFSquare = logTFSquareCounter.getValue() / 1000.0;
 
+                    tf_cosnorm_base = Math.sqrt(logTFSquare);
+                    
                     real_mean = (double)length / (double)count;
                     // stddev = sqrt((sum(lengths ^ 2)/count) - (mean ^ 2)
                     double mean = Math.pow(real_mean, 2);
@@ -186,6 +193,7 @@ public class KmerStatisticsBuilder extends Configured implements Tool, IPreproce
                     LOG.info("total k-mers " + uniqueCounter.getName() + " : " + length);
                     LOG.info("average " + uniqueCounter.getName() + " : " + real_mean);
                     LOG.info("std-deviation " + uniqueCounter.getName() + " : " + stddev);
+                    LOG.info("tf-cos-norm-base " + uniqueCounter.getName() + " : " + tf_cosnorm_base);
 
                     Path outputHadoopPath = new Path(ppConfig.getKmerStatisticsPath(), KmerStatisticsHelper.makeKmerStatisticsFileName(uniqueCounter.getName()));
                     FileSystem fs = outputHadoopPath.getFileSystem(conf);
@@ -197,6 +205,7 @@ public class KmerStatisticsBuilder extends Configured implements Tool, IPreproce
                     statistics.setTotalKmers(length);
                     statistics.setAverageFrequency(real_mean);
                     statistics.setStdDeviation(stddev);
+                    statistics.setTFCosineNormBase(tf_cosnorm_base);
 
                     statistics.saveTo(fs, outputHadoopPath);
                 }

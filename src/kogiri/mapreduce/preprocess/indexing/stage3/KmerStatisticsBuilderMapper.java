@@ -40,6 +40,7 @@ public class KmerStatisticsBuilderMapper extends Mapper<CompressedSequenceWritab
     private Counter uniqueKmerCounter;
     private Counter totalKmerCounter;
     private Counter squareKmerCounter;
+    private Counter logTFSquareCounter;
     
     @Override
     protected void setup(Context context) throws IOException, InterruptedException {
@@ -49,6 +50,7 @@ public class KmerStatisticsBuilderMapper extends Mapper<CompressedSequenceWritab
         this.uniqueKmerCounter = context.getCounter(KmerStatisticsHelper.getCounterGroupNameUnique(), fastaFileName);
         this.totalKmerCounter = context.getCounter(KmerStatisticsHelper.getCounterGroupNameTotal(), fastaFileName);
         this.squareKmerCounter = context.getCounter(KmerStatisticsHelper.getCounterGroupNameSquare(), fastaFileName);
+        this.logTFSquareCounter = context.getCounter(KmerStatisticsHelper.getCounterGroupNameLogTFSquare(), fastaFileName);
     }
     
     @Override
@@ -58,6 +60,7 @@ public class KmerStatisticsBuilderMapper extends Mapper<CompressedSequenceWritab
             this.uniqueKmerCounter.increment(1);
             this.totalKmerCounter.increment(pos);
             this.squareKmerCounter.increment((long) Math.pow(pos, 2));
+            this.logTFSquareCounter.increment((long) (Math.pow(Math.log10(pos), 2) * 1000));
         }
         
         int neg = value.getNegativeEntriesCount();
@@ -65,6 +68,7 @@ public class KmerStatisticsBuilderMapper extends Mapper<CompressedSequenceWritab
             this.uniqueKmerCounter.increment(1);
             this.totalKmerCounter.increment(neg);
             this.squareKmerCounter.increment((long) Math.pow(neg, 2));
+            this.logTFSquareCounter.increment((long) (Math.pow(Math.log10(neg), 2) * 1000));
         }
     }
     
