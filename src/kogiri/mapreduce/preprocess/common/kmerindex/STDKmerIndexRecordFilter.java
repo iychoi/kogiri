@@ -45,6 +45,10 @@ public class STDKmerIndexRecordFilter extends AKmerIndexRecordFilter {
     
     @Override
     public CompressedIntArrayWritable accept(CompressedSequenceWritable key, CompressedIntArrayWritable value) {
+        if(this.stddev.getFactor() <= 0) {
+            return new CompressedIntArrayWritable(value);
+        }
+        
         double diffPositive = Math.abs(this.stddev.getAverage() - value.getPositiveEntriesCount());
         double diffNegative = Math.abs(this.stddev.getAverage() - value.getNegativeEntriesCount());
         double boundary = Math.ceil(Math.abs(this.stddev.getStdDeviation() * this.stddev.getFactor()));
