@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package kogiri.mapreduce.readfrequency.common.kmermatch;
+package kogiri.mapreduce.common.kmermatch;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,7 +36,7 @@ public class KmerMatchInputFormatConfig {
     
     private static final Log LOG = LogFactory.getLog(KmerMatchInputFormatConfig.class);
     
-    private static final String HADOOP_CONFIG_KEY = "kogiri.mapreduce.readfrequency.common.kmermatch.kmermatchinputformatconfig";
+    private static final String HADOOP_CONFIG_KEY = "kogiri.mapreduce.common.kmermatch.kmermatchinputformatconfig";
     
     private int kmerSize;
     private int partitions;

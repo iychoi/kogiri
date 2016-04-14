@@ -20,6 +20,7 @@ package kogiri;
 import java.util.ArrayList;
 import java.util.List;
 import kogiri.common.helpers.ClassHelper;
+import kogiri.mapreduce.libra.Libra;
 import kogiri.mapreduce.preprocess.Preprocessor;
 import kogiri.mapreduce.readfrequency.ReadFrequencyCounter;
 import org.apache.commons.logging.Log;
@@ -35,7 +36,8 @@ public class Kogiri {
     
     private static final String[] CLASS_SEARCH_PACKAGES = {
         "kogiri.mapreduce.preprocess",
-        "kogiri.mapreduce.readfrequency"
+        "kogiri.mapreduce.readfrequency",
+        "kogiri.mapreduce.libra"
     };
     
     private static void invokeClass(Class clazz, String[] args) throws Exception {
@@ -79,6 +81,8 @@ public class Kogiri {
             return Preprocessor.class;
         } else if(command.equalsIgnoreCase("readfrequencycount")) {
             return ReadFrequencyCounter.class;
+        } else if(command.equalsIgnoreCase("libra")) {
+            return Libra.class;
         } else {
             return null;
         }
@@ -124,5 +128,6 @@ public class Kogiri {
         System.out.println("Commands :");
         System.out.println("> preprocess");
         System.out.println("> readfrequencycount");
+        System.out.println("> libra");
     }
 }

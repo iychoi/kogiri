@@ -15,23 +15,24 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package kogiri.mapreduce.readfrequency.kmermatch;
+package kogiri.mapreduce.libra.kmersimilarity;
 
-import kogiri.mapreduce.common.kmermatch.KmerMatchFileMapping;
-import kogiri.mapreduce.readfrequency.common.helpers.KmerMatchHelper;
-import kogiri.mapreduce.common.kmermatch.KmerMatchInputFormat;
-import kogiri.mapreduce.common.kmermatch.KmerMatchInputFormatConfig;
 import java.io.IOException;
+import kogiri.common.hadoop.io.datatypes.DoubleArrayWritable;
 import kogiri.common.helpers.FileSystemHelper;
 import kogiri.common.report.Report;
 import kogiri.hadoop.common.cmdargs.CommandArgumentsParser;
 import kogiri.mapreduce.common.helpers.MapReduceClusterHelper;
 import kogiri.mapreduce.common.helpers.MapReduceHelper;
+import kogiri.mapreduce.common.kmermatch.KmerMatchFileMapping;
+import kogiri.mapreduce.common.kmermatch.KmerMatchInputFormat;
+import kogiri.mapreduce.common.kmermatch.KmerMatchInputFormatConfig;
+import kogiri.mapreduce.libra.LibraCmdArgs;
+import kogiri.mapreduce.libra.common.ILibraStage;
+import kogiri.mapreduce.libra.common.LibraConfig;
+import kogiri.mapreduce.libra.common.LibraConfigException;
+import kogiri.mapreduce.libra.common.helpers.KmerSimilarityHelper;
 import kogiri.mapreduce.preprocess.common.helpers.KmerIndexHelper;
-import kogiri.mapreduce.readfrequency.ReadFrequencyCounterCmdArgs;
-import kogiri.mapreduce.readfrequency.common.IReadFrequencyCounterStage;
-import kogiri.mapreduce.readfrequency.common.ReadFrequencyCounterConfig;
-import kogiri.mapreduce.readfrequency.common.ReadFrequencyCounterConfigException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -39,6 +40,7 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -50,92 +52,98 @@ import org.apache.hadoop.util.ToolRunner;
  *
  * @author iychoi
  */
-public class KmerMatcher extends Configured implements Tool, IReadFrequencyCounterStage {
+public class KmerSimilarity extends Configured implements Tool, ILibraStage {
     
-    private static final Log LOG = LogFactory.getLog(KmerMatcher.class);
+    private static final Log LOG = LogFactory.getLog(KmerSimilarity.class);
     
     private static final int PARTITIONS_PER_CORE = 10;
     
     public static void main(String[] args) throws Exception {
-        int res = ToolRunner.run(new Configuration(), new KmerMatcher(), args);
+        int res = ToolRunner.run(new Configuration(), new KmerSimilarity(), args);
         System.exit(res);
     }
     
-    public KmerMatcher() {
+    public KmerSimilarity() {
         
     }
     
     @Override
     public int run(String[] args) throws Exception {
-        CommandArgumentsParser<ReadFrequencyCounterCmdArgs> parser = new CommandArgumentsParser<ReadFrequencyCounterCmdArgs>();
-        ReadFrequencyCounterCmdArgs cmdParams = new ReadFrequencyCounterCmdArgs();
+        CommandArgumentsParser<LibraCmdArgs> parser = new CommandArgumentsParser<LibraCmdArgs>();
+        LibraCmdArgs cmdParams = new LibraCmdArgs();
         if(!parser.parse(args, cmdParams)) {
             LOG.error("Failed to parse command line arguments!");
             return 1;
         }
         
-        ReadFrequencyCounterConfig rfConfig = cmdParams.getReadFrequencyCounterConfig();
+        LibraConfig lConfig = cmdParams.getLibraConfig();
         
-        return runJob(rfConfig);
+        return runJob(lConfig);
     }
     
     @Override
-    public int run(ReadFrequencyCounterConfig rfConfig) throws Exception {
+    public int run(LibraConfig lConfig) throws Exception {
         setConf(new Configuration());
-        return runJob(rfConfig);
+        return runJob(lConfig);
     }
     
     
-    private void validateReadFrequencyCounterConfig(ReadFrequencyCounterConfig rfConfig) throws ReadFrequencyCounterConfigException {
-        if(rfConfig.getKmerIndexPath().size() <= 0) {
-            throw new ReadFrequencyCounterConfigException("cannot find input kmer index path");
+    private void validateLibraConfig(LibraConfig lConfig) throws LibraConfigException {
+        if(lConfig.getKmerIndexPath().size() <= 0) {
+            throw new LibraConfigException("cannot find input kmer index path");
         }
         
-        if(rfConfig.getClusterConfiguration() == null) {
-            throw new ReadFrequencyCounterConfigException("cannout find cluster configuration");
+        if(lConfig.getClusterConfiguration() == null) {
+            throw new LibraConfigException("cannout find cluster configuration");
         }
         
-        if(rfConfig.getKmerHistogramPath() == null) {
-            throw new ReadFrequencyCounterConfigException("cannot find kmer histogram path");
+        if(lConfig.getKmerHistogramPath() == null) {
+            throw new LibraConfigException("cannot find kmer histogram path");
         }
         
-        if(rfConfig.getKmerStatisticsPath() == null) {
-            throw new ReadFrequencyCounterConfigException("cannot find kmer statistics path");
+        if(lConfig.getKmerStatisticsPath() == null) {
+            throw new LibraConfigException("cannot find kmer statistics path");
         }
         
-        if(rfConfig.getKmerMatchPath() == null) {
-            throw new ReadFrequencyCounterConfigException("cannot find kmer match path");
+        if(lConfig.getOutputPath() == null) {
+            throw new LibraConfigException("cannot find output path");
         }
     }
     
-    private int runJob(ReadFrequencyCounterConfig rfConfig) throws Exception {
+    private int runJob(LibraConfig lConfig) throws Exception {
         // check config
-        validateReadFrequencyCounterConfig(rfConfig);
+        validateLibraConfig(lConfig);
         
         // configuration
         Configuration conf = this.getConf();
         
-        Job job = new Job(conf, "Kogiri Read Frequency Counter - Finding Matching Kmers");
+        Job job = new Job(conf, "Kogiri Libra - Computing similarity between samples");
         conf = job.getConfiguration();
         
         // set user configuration
-        rfConfig.getClusterConfiguration().configureTo(conf);
-        rfConfig.saveTo(conf);
+        lConfig.getClusterConfiguration().configureTo(conf);
+        lConfig.saveTo(conf);
         
-        job.setJarByClass(KmerMatcher.class);
+        job.setJarByClass(KmerSimilarity.class);
         
         // Mapper
-        job.setMapperClass(KmerMatcherMapper.class);
+        job.setMapperClass(KmerSimilarityMapper.class);
         job.setInputFormatClass(KmerMatchInputFormat.class);
         job.setMapOutputKeyClass(Text.class);
         job.setMapOutputValueClass(Text.class);
+        
+        // Combiner
+        //job.setCombinerClass(KmerSimilarityCombiner.class);
+        
+        // Reducer
+        //job.setReducerClass(KmerSimilarityReducer.class);
 
         // Specify key / value
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(Text.class);
 
         // Inputs
-        Path[] kmerIndexFiles = KmerIndexHelper.getAllKmerIndexIndexFilePath(conf, rfConfig.getKmerIndexPath());
+        Path[] kmerIndexFiles = KmerIndexHelper.getAllKmerIndexIndexFilePath(conf, lConfig.getKmerIndexPath());
         KmerMatchInputFormat.addInputPaths(job, FileSystemHelper.makeCommaSeparated(kmerIndexFiles));
 
         LOG.info("Input kmer index files : " + kmerIndexFiles.length);
@@ -170,35 +178,34 @@ public class KmerMatcher extends Configured implements Tool, IReadFrequencyCount
         KmerMatchInputFormatConfig matchInputFormatConfig = new KmerMatchInputFormatConfig();
         matchInputFormatConfig.setKmerSize(kmerSize);
         matchInputFormatConfig.setPartitionNum(MRNodes * PARTITIONS_PER_CORE);
-        matchInputFormatConfig.setKmerHistogramPath(rfConfig.getKmerHistogramPath());
-        matchInputFormatConfig.setKmerStatisticsPath(rfConfig.getKmerStatisticsPath());
-        matchInputFormatConfig.setStandardDeviationFactor(rfConfig.getStandardDeviationFactor());
+        matchInputFormatConfig.setKmerHistogramPath(lConfig.getKmerHistogramPath());
+        matchInputFormatConfig.setKmerStatisticsPath(lConfig.getKmerStatisticsPath());
+        matchInputFormatConfig.setStandardDeviationFactor(lConfig.getStandardDeviationFactor());
         
         KmerMatchInputFormat.setInputFormatConfig(job, matchInputFormatConfig);
         
-        FileOutputFormat.setOutputPath(job, new Path(rfConfig.getKmerMatchPath()));
+        FileOutputFormat.setOutputPath(job, new Path(lConfig.getOutputPath()));
         job.setOutputFormatClass(TextOutputFormat.class);
 
-        // Map only job
         job.setNumReduceTasks(0);
-
+        
         // Execute job and return status
         boolean result = job.waitForCompletion(true);
 
         // commit results
         if(result) {
-            commit(new Path(rfConfig.getKmerMatchPath()), conf);
+            commit(new Path(lConfig.getOutputPath()), conf);
             
-            Path tableFilePath = new Path(rfConfig.getKmerMatchPath(), KmerMatchHelper.makeKmerMatchTableFileName());
+            Path tableFilePath = new Path(lConfig.getOutputPath(), KmerSimilarityHelper.makeKmerSimilarityTableFileName());
             FileSystem fs = tableFilePath.getFileSystem(conf);
             fileMapping.saveTo(fs, tableFilePath);
         }
         
         // report
-        if(rfConfig.getReportPath() != null && !rfConfig.getReportPath().isEmpty()) {
+        if(lConfig.getReportPath() != null && !lConfig.getReportPath().isEmpty()) {
             Report report = new Report();
             report.addJob(job);
-            report.writeTo(rfConfig.getReportPath());
+            report.writeTo(lConfig.getReportPath());
         }
         
         return result ? 0 : 1;
@@ -219,7 +226,7 @@ public class KmerMatcher extends Configured implements Tool, IReadFrequencyCount
                 } else if(MapReduceHelper.isPartialOutputFiles(entryPath)) {
                     // rename outputs
                     int mapreduceID = MapReduceHelper.getMapReduceID(entryPath);
-                    String newName = KmerMatchHelper.makeKmerMatchResultFileName(mapreduceID);
+                    String newName = KmerSimilarityHelper.makeKmerSimilarityResultFileName(mapreduceID);
                     Path toPath = new Path(entryPath.getParent(), newName);
 
                     LOG.info("output : " + entryPath.toString());

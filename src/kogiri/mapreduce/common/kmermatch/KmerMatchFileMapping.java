@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package kogiri.mapreduce.readfrequency.common.kmermatch;
+package kogiri.mapreduce.common.kmermatch;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,36 +37,36 @@ import org.codehaus.jackson.annotate.JsonProperty;
  *
  * @author iychoi
  */
-public class KmerMatcherFileMapping {
+public class KmerMatchFileMapping {
     
-    private static final Log LOG = LogFactory.getLog(KmerMatcherFileMapping.class);
+    private static final Log LOG = LogFactory.getLog(KmerMatchFileMapping.class);
     
     private static final String HADOOP_CONFIG_KEY = "kogiri.mapreduce.readfrequency.common.kmermatch.kmermatcherfilemapping";
     
     private Hashtable<String, Integer> idTable;
     private List<String> objList;
 
-    public static KmerMatcherFileMapping createInstance(File file) throws IOException {
+    public static KmerMatchFileMapping createInstance(File file) throws IOException {
         JsonSerializer serializer = new JsonSerializer();
-        return (KmerMatcherFileMapping) serializer.fromJsonFile(file, KmerMatcherFileMapping.class);
+        return (KmerMatchFileMapping) serializer.fromJsonFile(file, KmerMatchFileMapping.class);
     }
     
-    public static KmerMatcherFileMapping createInstance(String json) throws IOException {
+    public static KmerMatchFileMapping createInstance(String json) throws IOException {
         JsonSerializer serializer = new JsonSerializer();
-        return (KmerMatcherFileMapping) serializer.fromJson(json, KmerMatcherFileMapping.class);
+        return (KmerMatchFileMapping) serializer.fromJson(json, KmerMatchFileMapping.class);
     }
     
-    public static KmerMatcherFileMapping createInstance(Configuration conf) throws IOException {
+    public static KmerMatchFileMapping createInstance(Configuration conf) throws IOException {
         JsonSerializer serializer = new JsonSerializer();
-        return (KmerMatcherFileMapping) serializer.fromJsonConfiguration(conf, HADOOP_CONFIG_KEY, KmerMatcherFileMapping.class);
+        return (KmerMatchFileMapping) serializer.fromJsonConfiguration(conf, HADOOP_CONFIG_KEY, KmerMatchFileMapping.class);
     }
     
-    public static KmerMatcherFileMapping createInstance(FileSystem fs, Path file) throws IOException {
+    public static KmerMatchFileMapping createInstance(FileSystem fs, Path file) throws IOException {
         JsonSerializer serializer = new JsonSerializer();
-        return (KmerMatcherFileMapping) serializer.fromJsonFile(fs, file, KmerMatcherFileMapping.class);
+        return (KmerMatchFileMapping) serializer.fromJsonFile(fs, file, KmerMatchFileMapping.class);
     }
     
-    public KmerMatcherFileMapping() {
+    public KmerMatchFileMapping() {
         this.idTable = new Hashtable<String, Integer>();
         this.objList = new ArrayList<String>();
     }

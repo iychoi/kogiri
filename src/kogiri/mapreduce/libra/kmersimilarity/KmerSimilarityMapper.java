@@ -15,22 +15,25 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package kogiri.mapreduce.readfrequency.kmermatch;
+package kogiri.mapreduce.libra.kmersimilarity;
 
-import kogiri.mapreduce.common.kmermatch.KmerMatchFileMapping;
-import kogiri.mapreduce.common.kmermatch.KmerMatchResult;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import kogiri.common.hadoop.io.datatypes.CompressedIntArrayWritable;
 import kogiri.common.hadoop.io.datatypes.CompressedSequenceWritable;
-import kogiri.common.json.JsonSerializer;
+import kogiri.common.hadoop.io.datatypes.DoubleArrayWritable;
+import kogiri.mapreduce.common.kmermatch.KmerMatchFileMapping;
+import kogiri.mapreduce.common.kmermatch.KmerMatchResult;
+import kogiri.mapreduce.libra.common.LibraConfig;
 import kogiri.mapreduce.preprocess.common.helpers.KmerIndexHelper;
-import kogiri.mapreduce.readfrequency.common.kmermatch.KmerMatchOutputRecord;
-import kogiri.mapreduce.readfrequency.common.kmermatch.KmerMatchOutputRecordField;
+import kogiri.mapreduce.preprocess.common.helpers.KmerStatisticsHelper;
+import kogiri.mapreduce.preprocess.common.kmerstatistics.KmerStatistics;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -39,25 +42,46 @@ import org.apache.hadoop.mapreduce.Mapper;
  *
  * @author iychoi
  */
-public class KmerMatcherMapper extends Mapper<CompressedSequenceWritable, KmerMatchResult, Text, Text> {
+public class KmerSimilarityMapper extends Mapper<CompressedSequenceWritable, KmerMatchResult, Text, Text> {
     
-    private static final Log LOG = LogFactory.getLog(KmerMatcherMapper.class);
+    private static final Log LOG = LogFactory.getLog(KmerSimilarityMapper.class);
     
+    private LibraConfig libraConfig;
     private KmerMatchFileMapping fileMapping;
     private Hashtable<String, Integer> idCacheTable;
     private Counter reportCounter;
-    private JsonSerializer serializer;
     
+    private int valuesLen;
+    private double[] scoreAccumulated;
+    private double[] tfConsineNormBase;
     
     @Override
     protected void setup(Context context) throws IOException, InterruptedException {
+        this.libraConfig = LibraConfig.createInstance(context.getConfiguration());
         this.fileMapping = KmerMatchFileMapping.createInstance(context.getConfiguration());
         
         this.idCacheTable = new Hashtable<String, Integer>();
         
-        this.reportCounter = context.getCounter("KmerMatcher", "report");
+        this.reportCounter = context.getCounter("KmerSimilarity", "report");
         
-        this.serializer = new JsonSerializer();
+        this.valuesLen = this.fileMapping.getSize();
+        this.scoreAccumulated = new double[this.valuesLen * this.valuesLen];
+        for(int i=0;i<this.scoreAccumulated.length;i++) {
+            this.scoreAccumulated[i] = 0;
+        }
+        
+        this.tfConsineNormBase = new double[this.valuesLen];
+        for(int i=0;i<this.tfConsineNormBase.length;i++) {
+            // fill tfConsineNormBase
+            String fastaFilename = this.fileMapping.getFastaFileFromID(i);
+            String statisticsFilename = KmerStatisticsHelper.makeKmerStatisticsFileName(fastaFilename);
+            Path statisticsPath = new Path(this.libraConfig.getKmerStatisticsPath(), statisticsFilename);
+            FileSystem fs = statisticsPath.getFileSystem(context.getConfiguration());
+            
+            KmerStatistics statistics = KmerStatistics.createInstance(fs, statisticsPath);
+
+            this.tfConsineNormBase[i] = statistics.getTFCosineNormBase();
+        }
     }
     
     @Override
@@ -102,28 +126,52 @@ public class KmerMatcherMapper extends Mapper<CompressedSequenceWritable, KmerMa
             fileid_arr[i] = fileidInt;
         }
         
-        KmerMatchOutputRecord outputRecord = new KmerMatchOutputRecord();
-        
-        for(int i=0;i<fileid_arr.length;i++) {
-            KmerMatchOutputRecordField field = new KmerMatchOutputRecordField();
-            field.setFileID(fileid_arr[i]);
-            field.addReadIDs(filteredValueArray.get(i).get());
-            
-            outputRecord.addField(field);
+        // compute normal
+        double[] normal = new double[this.valuesLen];
+        for(int i=0;i<this.valuesLen;i++) {
+            normal[i] = 0;
         }
         
+        for(int i=0;i<filteredValueArray.size();i++) {
+            CompressedIntArrayWritable arr = filteredValueArray.get(i);
+            int reads = arr.getNegativeEntriesCount() + arr.getPositiveEntriesCount();
+            normal[fileid_arr[i]] = ((double)reads) / this.tfConsineNormBase[fileid_arr[i]];
+        }
+        
+        accumulateScore(normal);
+        
         this.reportCounter.increment(1);
-        
-        String json = this.serializer.toJson(outputRecord);
-        
-        context.write(new Text(key.getSequence()), new Text(json));
+    }
+    
+    private void accumulateScore(double[] normal) {
+        for(int i=0;i<this.valuesLen;i++) {
+            for(int j=0;j<this.valuesLen;j++) {
+                if(i != j) {
+                    this.scoreAccumulated[i*this.valuesLen + j] += normal[i] * normal[j];
+                }
+            }
+        }
     }
     
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
+        StringBuilder sb = new StringBuilder();
+        
+        for(int i=0;i<this.scoreAccumulated.length;i++) {
+            if(i != 0) {
+                sb.append(" ");
+            }
+            sb.append(Double.toString(this.scoreAccumulated[i]));
+        }
+        
+        context.write(new Text(">"), new Text(sb.toString()));
+
         this.fileMapping = null;
         this.idCacheTable.clear();
         this.idCacheTable = null;
-        this.serializer = null;
+    
+        this.libraConfig = null;
+        this.scoreAccumulated = null;
+        this.tfConsineNormBase = null;
     }
 }

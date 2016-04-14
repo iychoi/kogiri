@@ -34,7 +34,7 @@ import kogiri.mapreduce.readfrequency.common.ReadFrequencyCounterConfig;
 import kogiri.mapreduce.readfrequency.common.ReadFrequencyCounterConfigException;
 import kogiri.mapreduce.readfrequency.common.ReadFrequencyCounterConstants;
 import kogiri.mapreduce.readfrequency.common.helpers.KmerMatchHelper;
-import kogiri.mapreduce.readfrequency.common.kmermatch.KmerMatcherFileMapping;
+import kogiri.mapreduce.common.kmermatch.KmerMatchFileMapping;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -113,7 +113,7 @@ public class ModeCounter extends Configured implements Tool, IReadFrequencyCount
         // table file
         Path tableFilePath = new Path(rfConfig.getKmerMatchPath(), KmerMatchHelper.makeKmerMatchTableFileName());
         FileSystem fs = tableFilePath.getFileSystem(conf);
-        KmerMatcherFileMapping fileMapping = KmerMatcherFileMapping.createInstance(fs, tableFilePath);
+        KmerMatchFileMapping fileMapping = KmerMatchFileMapping.createInstance(fs, tableFilePath);
         
         Path[] inputFiles = KmerMatchHelper.getAllKmerMatchResultFilePath(conf, rfConfig.getKmerMatchPath());
         
