@@ -32,21 +32,27 @@ import kogiri.mapreduce.libra.common.ILibraStage;
 import kogiri.mapreduce.libra.common.LibraConfig;
 import kogiri.mapreduce.libra.common.LibraConfigException;
 import kogiri.mapreduce.libra.common.helpers.KmerSimilarityHelper;
+import kogiri.mapreduce.libra.common.kmersimilarity.KmerSimilarityOutputRecord;
 import kogiri.mapreduce.preprocess.common.helpers.KmerIndexHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FsStatus;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.LineRecordReader;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
+import sun.misc.IOUtils;
 
 /**
  *
@@ -132,12 +138,6 @@ public class KmerSimilarity extends Configured implements Tool, ILibraStage {
         job.setMapOutputKeyClass(Text.class);
         job.setMapOutputValueClass(Text.class);
         
-        // Combiner
-        //job.setCombinerClass(KmerSimilarityCombiner.class);
-        
-        // Reducer
-        //job.setReducerClass(KmerSimilarityReducer.class);
-
         // Specify key / value
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(Text.class);
@@ -187,6 +187,7 @@ public class KmerSimilarity extends Configured implements Tool, ILibraStage {
         FileOutputFormat.setOutputPath(job, new Path(lConfig.getOutputPath()));
         job.setOutputFormatClass(TextOutputFormat.class);
 
+        // Reducer
         job.setNumReduceTasks(0);
         
         // Execute job and return status
@@ -199,6 +200,9 @@ public class KmerSimilarity extends Configured implements Tool, ILibraStage {
             Path tableFilePath = new Path(lConfig.getOutputPath(), KmerSimilarityHelper.makeKmerSimilarityTableFileName());
             FileSystem fs = tableFilePath.getFileSystem(conf);
             fileMapping.saveTo(fs, tableFilePath);
+            
+            // combine results
+            sumScores(new Path(lConfig.getOutputPath()), conf);
         }
         
         // report
@@ -239,5 +243,54 @@ public class KmerSimilarity extends Configured implements Tool, ILibraStage {
         } else {
             throw new IOException("path not found : " + outputPath.toString());
         }
+    }
+    
+    private void sumScores(Path outputPath, Configuration conf) throws IOException {
+        Path[] resultFiles = KmerSimilarityHelper.getAllKmerSimilarityResultFilePath(conf, outputPath.toString());
+        FileSystem fs = outputPath.getFileSystem(conf);
+
+        KmerSimilarityOutputRecord scoreRec = null;
+        for(Path resultFile : resultFiles) {
+            LOG.info("Reading the scores from " + resultFile.toString());
+            FSDataInputStream is = fs.open(resultFile);
+            FileStatus status = fs.getFileStatus(resultFile);
+            
+            LineRecordReader reader = new LineRecordReader(is, 0, status.getLen(), conf);
+            
+            LongWritable off = new LongWritable();
+            Text val = new Text();
+
+            while(reader.next(off, val)) {
+                if(scoreRec == null) {
+                    scoreRec = KmerSimilarityOutputRecord.createInstance(val.toString());
+                } else {
+                    KmerSimilarityOutputRecord rec2 = KmerSimilarityOutputRecord.createInstance(val.toString());
+                    scoreRec.addScore(rec2.getScore());
+                }
+            }
+            
+            reader.close();
+        }
+        
+        double[] accumulatedScore = scoreRec.getScore();
+        
+        String resultFilename = KmerSimilarityHelper.makeKmerSimilarityFinalResultFileName();
+        Path resultFilePath = new Path(outputPath, resultFilename);
+        
+        LOG.info("Creating a final score file : " + resultFilePath.toString());
+        
+        FSDataOutputStream os = fs.create(resultFilePath);
+        int n = (int)Math.sqrt(accumulatedScore.length);
+        for(int i=0;i<accumulatedScore.length;i++) {
+            int x = i/n;
+            int y = i%n;
+            
+            String k = x + "-" + y;
+            String v = Double.toString(accumulatedScore[i]);
+            String out = k + "\t" + v + "\n";
+            os.write(out.getBytes());
+        }
+        
+        os.close();
     }
 }

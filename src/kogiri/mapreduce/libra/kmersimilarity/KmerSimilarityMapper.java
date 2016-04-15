@@ -22,10 +22,11 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import kogiri.common.hadoop.io.datatypes.CompressedIntArrayWritable;
 import kogiri.common.hadoop.io.datatypes.CompressedSequenceWritable;
-import kogiri.common.hadoop.io.datatypes.DoubleArrayWritable;
+import kogiri.common.json.JsonSerializer;
 import kogiri.mapreduce.common.kmermatch.KmerMatchFileMapping;
 import kogiri.mapreduce.common.kmermatch.KmerMatchResult;
 import kogiri.mapreduce.libra.common.LibraConfig;
+import kogiri.mapreduce.libra.common.kmersimilarity.KmerSimilarityOutputRecord;
 import kogiri.mapreduce.preprocess.common.helpers.KmerIndexHelper;
 import kogiri.mapreduce.preprocess.common.helpers.KmerStatisticsHelper;
 import kogiri.mapreduce.preprocess.common.kmerstatistics.KmerStatistics;
@@ -33,7 +34,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -50,6 +50,7 @@ public class KmerSimilarityMapper extends Mapper<CompressedSequenceWritable, Kme
     private KmerMatchFileMapping fileMapping;
     private Hashtable<String, Integer> idCacheTable;
     private Counter reportCounter;
+    private JsonSerializer serializer;
     
     private int valuesLen;
     private double[] scoreAccumulated;
@@ -63,6 +64,7 @@ public class KmerSimilarityMapper extends Mapper<CompressedSequenceWritable, Kme
         this.idCacheTable = new Hashtable<String, Integer>();
         
         this.reportCounter = context.getCounter("KmerSimilarity", "report");
+        this.serializer = new JsonSerializer();
         
         this.valuesLen = this.fileMapping.getSize();
         this.scoreAccumulated = new double[this.valuesLen * this.valuesLen];
@@ -134,8 +136,9 @@ public class KmerSimilarityMapper extends Mapper<CompressedSequenceWritable, Kme
         
         for(int i=0;i<filteredValueArray.size();i++) {
             CompressedIntArrayWritable arr = filteredValueArray.get(i);
-            int reads = arr.getNegativeEntriesCount() + arr.getPositiveEntriesCount();
-            normal[fileid_arr[i]] = ((double)reads) / this.tfConsineNormBase[fileid_arr[i]];
+            int freq = arr.getNegativeEntriesCount() + arr.getPositiveEntriesCount();
+            double tf = 1 + Math.log10(freq);
+            normal[fileid_arr[i]] = ((double)tf) / this.tfConsineNormBase[fileid_arr[i]];
         }
         
         accumulateScore(normal);
@@ -146,25 +149,18 @@ public class KmerSimilarityMapper extends Mapper<CompressedSequenceWritable, Kme
     private void accumulateScore(double[] normal) {
         for(int i=0;i<this.valuesLen;i++) {
             for(int j=0;j<this.valuesLen;j++) {
-                if(i != j) {
-                    this.scoreAccumulated[i*this.valuesLen + j] += normal[i] * normal[j];
-                }
+                this.scoreAccumulated[i*this.valuesLen + j] += normal[i] * normal[j];
             }
         }
     }
     
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
-        StringBuilder sb = new StringBuilder();
-        
-        for(int i=0;i<this.scoreAccumulated.length;i++) {
-            if(i != 0) {
-                sb.append(" ");
-            }
-            sb.append(Double.toString(this.scoreAccumulated[i]));
-        }
-        
-        context.write(new Text(">"), new Text(sb.toString()));
+        KmerSimilarityOutputRecord rec = new KmerSimilarityOutputRecord();
+        rec.setScore(this.scoreAccumulated);
+                
+        String json = this.serializer.toJson(rec);
+        context.write(new Text(" "), new Text(json));
 
         this.fileMapping = null;
         this.idCacheTable.clear();
@@ -173,5 +169,7 @@ public class KmerSimilarityMapper extends Mapper<CompressedSequenceWritable, Kme
         this.libraConfig = null;
         this.scoreAccumulated = null;
         this.tfConsineNormBase = null;
+        
+        this.serializer = null;
     }
 }

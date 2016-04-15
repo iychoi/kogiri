@@ -60,7 +60,7 @@ public class KmerStatisticsBuilderMapper extends Mapper<CompressedSequenceWritab
             this.uniqueKmerCounter.increment(1);
             this.totalKmerCounter.increment(pos);
             this.squareKmerCounter.increment((long) Math.pow(pos, 2));
-            this.logTFSquareCounter.increment((long) (Math.pow(1 + Math.log10(pos), 2) * 1000));
+            //this.logTFSquareCounter.increment((long) (Math.pow(1 + Math.log10(pos), 2) * 1000));
         }
         
         int neg = value.getNegativeEntriesCount();
@@ -68,7 +68,12 @@ public class KmerStatisticsBuilderMapper extends Mapper<CompressedSequenceWritab
             this.uniqueKmerCounter.increment(1);
             this.totalKmerCounter.increment(neg);
             this.squareKmerCounter.increment((long) Math.pow(neg, 2));
-            this.logTFSquareCounter.increment((long) (Math.pow(1 + Math.log10(neg), 2) * 1000));
+            //this.logTFSquareCounter.increment((long) (Math.pow(1 + Math.log10(neg), 2) * 1000));
+        }
+        
+        int sum = pos + neg;
+        if(sum > 0) {
+            this.logTFSquareCounter.increment((long) (Math.pow(1 + Math.log10(sum), 2) * 1000));
         }
     }
     

@@ -18,9 +18,17 @@
 
 package kogiri.mapreduce.libra.common.helpers;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import kogiri.common.helpers.FileSystemHelper;
 import kogiri.mapreduce.libra.common.LibraConstants;
+import kogiri.mapreduce.libra.common.kmersimilarity.KmerSimilarityResultPathFilter;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 /**
@@ -60,5 +68,47 @@ public class KmerSimilarityHelper {
     
     public static String makeKmerSimilarityResultFileName(int mapreduceID) {
         return LibraConstants.KMER_SIMILARITY_RESULT_FILENAME_PREFIX + "." + LibraConstants.KMER_SIMILARITY_RESULT_FILENAME_EXTENSION + "." + mapreduceID;
+    }
+    
+    public static String makeKmerSimilarityFinalResultFileName() {
+        return LibraConstants.KMER_SIMILARITY_RESULT_FILENAME_PREFIX + "." + LibraConstants.KMER_SIMILARITY_RESULT_FILENAME_EXTENSION;
+    }
+    
+    public static Path[] getAllKmerSimilarityResultFilePath(Configuration conf, String inputPathsCommaSeparated) throws IOException {
+        return getAllKmerSimilarityResultFilePath(conf, FileSystemHelper.makePathFromString(conf, FileSystemHelper.splitCommaSeparated(inputPathsCommaSeparated)));
+    }
+    
+    public static Path[] getAllKmerSimilarityResultFilePath(Configuration conf, String[] inputPath) throws IOException {
+        return getAllKmerSimilarityResultFilePath(conf, FileSystemHelper.makePathFromString(conf, inputPath));
+    }
+    
+    public static Path[] getAllKmerSimilarityResultFilePath(Configuration conf, Path[] inputPaths) throws IOException {
+        List<Path> inputFiles = new ArrayList<Path>();
+        KmerSimilarityResultPathFilter filter = new KmerSimilarityResultPathFilter();
+        
+        for(Path path : inputPaths) {
+            FileSystem fs = path.getFileSystem(conf);
+            if(fs.exists(path)) {
+                FileStatus status = fs.getFileStatus(path);
+                if(status.isDir()) {
+                    // check child
+                    FileStatus[] entries = fs.listStatus(path);
+                    for (FileStatus entry : entries) {
+                        if(!entry.isDir()) {
+                            if (filter.accept(entry.getPath())) {
+                                inputFiles.add(entry.getPath());
+                            }
+                        }
+                    }
+                } else {
+                    if (filter.accept(status.getPath())) {
+                        inputFiles.add(status.getPath());
+                    }
+                }
+            }
+        }
+        
+        Path[] files = inputFiles.toArray(new Path[0]);
+        return files;
     }
 }
