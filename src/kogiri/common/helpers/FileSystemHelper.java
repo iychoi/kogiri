@@ -138,6 +138,11 @@ public class FileSystemHelper {
                         inputFiles.add(entry.getPath());
                     }
                 }
+            } else {
+                FileStatus entry = fs.getFileStatus(path);
+                if(filter.accept(entry.getPath())) {
+                    inputFiles.add(entry.getPath());
+                }
             }
         }
         
