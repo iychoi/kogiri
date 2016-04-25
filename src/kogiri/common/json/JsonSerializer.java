@@ -74,7 +74,7 @@ public class JsonSerializer {
             fs.mkdirs(file.getParent());
         }
         
-        DataOutputStream ostream = fs.create(file, true, 64 * 1024);
+        DataOutputStream ostream = fs.create(file, true, 64 * 1024, (short)3, 1024 * 1024);
         this.mapper.writeValue(ostream, obj);
         ostream.close();
     }
