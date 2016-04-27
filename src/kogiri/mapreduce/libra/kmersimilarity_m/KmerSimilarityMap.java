@@ -15,10 +15,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package kogiri.mapreduce.libra.kmersimilarity;
+package kogiri.mapreduce.libra.kmersimilarity_m;
 
 import java.io.IOException;
-import kogiri.common.hadoop.io.datatypes.DoubleArrayWritable;
 import kogiri.common.helpers.FileSystemHelper;
 import kogiri.common.report.Report;
 import kogiri.hadoop.common.cmdargs.CommandArgumentsParser;
@@ -42,7 +41,6 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FsStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -52,24 +50,23 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
-import sun.misc.IOUtils;
 
 /**
  *
  * @author iychoi
  */
-public class KmerSimilarity extends Configured implements Tool, ILibraStage {
+public class KmerSimilarityMap extends Configured implements Tool, ILibraStage {
     
-    private static final Log LOG = LogFactory.getLog(KmerSimilarity.class);
+    private static final Log LOG = LogFactory.getLog(KmerSimilarityMap.class);
     
     private static final int PARTITIONS_PER_CORE = 10;
     
     public static void main(String[] args) throws Exception {
-        int res = ToolRunner.run(new Configuration(), new KmerSimilarity(), args);
+        int res = ToolRunner.run(new Configuration(), new KmerSimilarityMap(), args);
         System.exit(res);
     }
     
-    public KmerSimilarity() {
+    public KmerSimilarityMap() {
         
     }
     
@@ -130,7 +127,7 @@ public class KmerSimilarity extends Configured implements Tool, ILibraStage {
         lConfig.getClusterConfiguration().configureTo(conf);
         lConfig.saveTo(conf);
         
-        job.setJarByClass(KmerSimilarity.class);
+        job.setJarByClass(KmerSimilarityMap.class);
         
         // Mapper
         job.setMapperClass(KmerSimilarityMapper.class);

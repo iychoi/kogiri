@@ -15,15 +15,25 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package kogiri.spark.readfrequency.common;
+package kogiri.mapreduce.libra.kmersimilarity_r;
+
+
+import kogiri.common.hadoop.io.datatypes.CompressedIntArrayWritable;
+import kogiri.common.hadoop.io.datatypes.CompressedSequenceWritable;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.mapreduce.Partitioner;
 
 /**
  *
  * @author iychoi
  */
-public class ReadFrequencyCounterConstants {
-    public final static String KMER_MATCH_TABLE_FILENAME = "table.json";
-    public final static String KMER_MATCH_RESULT_FILENAME_PREFIX = "result";
-    public final static String KMER_MATCH_RESULT_FILENAME_EXTENSION = "match";
-    public final static String READ_FREQUENCY_FILENAME_FILENAME_EXTENSION = "readfreq";
+public class KmerSimilarityPartitioner extends Partitioner<CompressedSequenceWritable, CompressedIntArrayWritable> {
+
+    private static final Log LOG = LogFactory.getLog(KmerSimilarityPartitioner.class);
+    
+    @Override
+    public int getPartition(CompressedSequenceWritable key, CompressedIntArrayWritable value, int numReduceTasks) {
+        return Math.abs(key.getSequence().hashCode()) % numReduceTasks;
+    }
 }

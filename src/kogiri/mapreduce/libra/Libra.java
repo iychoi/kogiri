@@ -22,7 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import kogiri.hadoop.common.cmdargs.CommandArgumentsParser;
 import kogiri.mapreduce.libra.common.LibraConfig;
-import kogiri.mapreduce.libra.kmersimilarity.KmerSimilarity;
+import kogiri.mapreduce.libra.kmersimilarity_m.KmerSimilarityMap;
+import kogiri.mapreduce.libra.kmersimilarity_r.KmerSimilarityReduce;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -33,7 +34,8 @@ import org.apache.commons.logging.LogFactory;
 public class Libra {
     private static final Log LOG = LogFactory.getLog(Libra.class);
     
-    private static int RUN_STAGE_1 = 0x01;
+    private static int RUN_MODE_MAP = 0x00;
+    private static int RUN_MODE_REDUCE = 0x01;
     
     private static boolean isHelpParam(String[] args) {
         if(args.length < 1 || 
@@ -44,24 +46,23 @@ public class Libra {
         return false;
     }
     
-    private static int checkRunStages(String[] args) {
-        int runStages = 0;
+    private static int checkRunMode(String[] args) {
+        int runMode = 0;
         for(String arg : args) {
-            if(arg.equalsIgnoreCase("stage1")) {
-                runStages |= RUN_STAGE_1;
+            if(arg.equalsIgnoreCase("map")) {
+                runMode = RUN_MODE_MAP;
+            } else if(arg.equalsIgnoreCase("reduce")) {
+                runMode = RUN_MODE_REDUCE;
             }
         }
         
-        if(runStages == 0) {
-            runStages |= RUN_STAGE_1;
-        }
-        return runStages;
+        return runMode;
     }
     
-    private static String[] removeRunStages(String[] args) {
+    private static String[] removeRunMode(String[] args) {
         List<String> param = new ArrayList<String>();
         for(String arg : args) {
-            if(!arg.equalsIgnoreCase("stage1")) {
+            if(!arg.equalsIgnoreCase("map") && !arg.equalsIgnoreCase("reduce")) {
                 param.add(arg);
             }
         }
@@ -86,8 +87,8 @@ public class Libra {
             return;
         }
         
-        int runStages = checkRunStages(args);
-        String[] params = removeRunStages(args);
+        int runMode = checkRunMode(args);
+        String[] params = removeRunMode(args);
         
         LibraConfig lConfig;
         String lConfigPath = getJSONConfigPath(params);
@@ -105,10 +106,12 @@ public class Libra {
         }
         
         int res = 0;
-        if((runStages & RUN_STAGE_1) == RUN_STAGE_1 &&
-                res == 0) {
-            KmerSimilarity stage1 = new KmerSimilarity();
-            res = stage1.run(lConfig);
+        if(runMode == RUN_MODE_MAP) {
+            KmerSimilarityMap similarity = new KmerSimilarityMap();
+            res = similarity.run(lConfig);
+        } else if(runMode == RUN_MODE_REDUCE) {
+            KmerSimilarityReduce similarity = new KmerSimilarityReduce();
+            res = similarity.run(lConfig);
         }
 
         System.exit(res);
@@ -120,10 +123,12 @@ public class Libra {
         System.out.println("LIBRA - compute similarity");
         System.out.println("============================================================");
         System.out.println("Usage :");
-        System.out.println("> kogiri libra [stage1] <arguments ...>");
+        System.out.println("> kogiri libra [map|reduce] <arguments ...>");
         System.out.println();
-        System.out.println("Stage :");
-        System.out.println("> stage1");
-        System.out.println("> \tcompute similarity");
+        System.out.println("Mode :");
+        System.out.println("> map");
+        System.out.println("> \tcompute similarity using mappers");
+        System.out.println("> reduce");
+        System.out.println("> \tcompute similarity using reducers");
     }
 }

@@ -41,7 +41,7 @@ public class KmerMatchFileMapping {
     
     private static final Log LOG = LogFactory.getLog(KmerMatchFileMapping.class);
     
-    private static final String HADOOP_CONFIG_KEY = "kogiri.mapreduce.readfrequency.common.kmermatch.kmermatcherfilemapping";
+    private static final String HADOOP_CONFIG_KEY = "kogiri.mapreduce.common.kmermatch.kmermatcherfilemapping";
     
     private Hashtable<String, Integer> idTable;
     private List<String> objList;
